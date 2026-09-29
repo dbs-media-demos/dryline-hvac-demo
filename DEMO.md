@@ -4,7 +4,7 @@
 - Market / city: US – Oklahoma City, OK (service area: OKC, Edmond, Norman, Moore, Yukon, Mustang)
 - Languages: en
 - Live URL: https://dryline-hvac-demo.vercel.app
-- Repo: local only (git initialised, not pushed yet: waiting on which GitHub org/account)
+- Repo: https://github.com/dbs-media-demos/dryline-hvac-demo (public, branch main)
 - Folder: DBS Media Portfolio/Demo Websites/hvac
 - Vercel project: dryline-hvac-demo (team "Dimitrije's projects"), no custom domain
 - Stack: Next.js 16.3.6, React 19.2.8, Tailwind v4, GSAP 3.15 (ScrollTrigger, SplitText), Lenis
