@@ -1,6 +1,6 @@
-# Dryline Heat & Air — DBS Media concept site
+# Dryline Heat & Air — Scale by Noon concept site
 
-A fictional heating & air company in Oklahoma City, built by [DBS Media](https://dbs-media.com) as a demo for HVAC businesses.
+A fictional heating & air company in Oklahoma City, built by [Scale by Noon](https://scale-by-noon.vercel.app) as a demo for HVAC businesses.
 
 - Next.js 16 (App Router, Turbopack), React 19.2, Tailwind CSS v4, GSAP + Lenis
 - Signature features: the thermostat dial that re-themes the whole site, the "dryline" seasons scroll scene, the repair-or-replace calculator, Comfort Club plans, 24/7 emergency bar

@@ -26,7 +26,7 @@ export default function PrivacyPage() {
       <section className="py-20 md:py-28">
         <div className="prose-dry mx-auto max-w-[46rem] px-5 md:px-8">
           <p>
-            <strong>This is a concept website created by DBS Media.</strong> Dryline Heat &amp; Air is a fictional company, and the forms on this site do not transmit or store any
+            <strong>This is a concept website created by Scale by Noon.</strong> Dryline Heat &amp; Air is a fictional company, and the forms on this site do not transmit or store any
             information. The policy below shows how a real HVAC company might describe its practices.
           </p>
           <p>Last updated: September 28, 2026.</p>

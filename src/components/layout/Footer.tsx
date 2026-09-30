@@ -5,7 +5,7 @@ import { PhoneIcon, MailIcon, PinIcon } from "@/components/ui/Icons";
 import { services } from "@/content/services";
 import { cities } from "@/content/cities";
 import { hoursTable } from "@/lib/hours";
-import { site, telHref, mailHref } from "@/lib/site";
+import { site, telHref, mailHref, agencyName, agencyUrl } from "@/lib/site";
 
 const company = [
   { href: "/about", label: "About Dryline" },
@@ -116,8 +116,8 @@ export function Footer() {
           </p>
           <p>
             A concept site — Dryline is a fictional company.{" "}
-            <a href="https://dbs-media.com" target="_blank" rel="noopener" className="link-underline text-frost/85">
-              Design &amp; development: DBS Media
+            <a href={agencyUrl} target="_blank" rel="noopener" className="link-underline text-frost/85">
+              Design &amp; development: {agencyName}
             </a>
           </p>
         </div>

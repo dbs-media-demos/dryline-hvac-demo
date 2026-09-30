@@ -10,7 +10,7 @@ import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { JsonLd } from "@/components/layout/JsonLd";
 import { Cursor } from "@/components/fx/Cursor";
 import { modeBootScript } from "@/lib/mode";
-import { site, siteUrl, noindex } from "@/lib/site";
+import { site, siteUrl, noindex, agencyName, agencyUrl } from "@/lib/site";
 import { businessSchema, websiteSchema, graph } from "@/lib/schema";
 
 const unbounded = Unbounded({ subsets: ["latin"], variable: "--font-unbounded", weight: ["400", "500", "600"], display: "swap" });
@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   title: { default: `${site.name} | Heating & Air Conditioning in Oklahoma City`, template: `%s | ${site.name}` },
   description: site.description,
   applicationName: site.name,
-  authors: [{ name: "DBS Media", url: "https://dbs-media.com" }],
-  creator: "DBS Media",
+  authors: [{ name: agencyName, url: agencyUrl }],
+  creator: agencyName,
   formatDetection: { telephone: false },
   robots: noindex ? { index: false, follow: false, googleBot: { index: false, follow: false } } : { index: true, follow: true },
   category: "HVAC contractor",

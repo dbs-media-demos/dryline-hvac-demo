@@ -1,6 +1,6 @@
-# Dryline Heat & Air (DBS Media demo)
+# Dryline Heat & Air (Scale by Noon demo)
 
-- Niche: HVAC / heating & air         (matches dbs-media.com industry id: hvac)
+- Niche: HVAC / heating & air         (matches scale-by-noon.vercel.app industry id: hvac)
 - Market / city: US – Oklahoma City, OK (service area: OKC, Edmond, Norman, Moore, Yukon, Mustang)
 - Languages: en
 - Live URL: https://dryline-hvac-demo.vercel.app
