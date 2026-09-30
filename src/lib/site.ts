@@ -4,7 +4,7 @@ export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://dryline-hva
 
 /** The agency that built this concept site. Change the URL here only (custom domain later). */
 export const agencyName = "Scale by Noon";
-export const agencyUrl = "https://scale-by-noon.vercel.app";
+export const agencyUrl = "https://www.scalebynoon.com";
 
 export const absoluteUrl = (path = "/") => `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
 
