@@ -1,4 +1,7 @@
+"use client";
+
 import clsx from "clsx";
+import { useBiz } from "@/components/preview/BizContext";
 
 /**
  * The Dryline mark: a disc split by one S-curve — the dryline, where hot dry air meets
@@ -32,12 +35,17 @@ export function LogoMark({ className, spin = true, tone = "light" }: { className
 }
 
 export function Logo({ className, tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
+  const biz = useBiz();
   return (
     <span className={clsx("inline-flex items-center gap-2.5", className)}>
       <LogoMark className="h-8 w-8" tone={tone} />
       <span className="flex flex-col leading-none">
-        <span className="font-display text-[1.28rem] font-semibold tracking-[-0.06em]">dryline</span>
-        <span className="mt-[3px] font-mono text-[0.52rem] tracking-[0.3em] whitespace-nowrap opacity-70">HEAT &amp; AIR</span>
+        <span className={clsx("block max-w-[13rem] truncate font-display font-semibold tracking-[-0.06em] sm:max-w-[18rem]", biz.preview && biz.shortName.length > 16 ? "text-[1.02rem]" : "text-[1.28rem]")}>
+          {biz.preview ? biz.shortName : "dryline"}
+        </span>
+        <span className="mt-[3px] font-mono text-[0.52rem] tracking-[0.3em] whitespace-nowrap opacity-70">
+          {biz.preview && biz.lang === "sr" ? "KLIMA I GREJANJE" : "HEAT & AIR"}
+        </span>
       </span>
     </span>
   );

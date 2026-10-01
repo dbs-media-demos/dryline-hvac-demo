@@ -1,0 +1,245 @@
+/**
+ * Serbian (Latin) for personalised previews of Serbian klima / grejanje servisi, applied to the
+ * page by components/preview/Translate. Keys are the English fragments as they render (trimmed);
+ * collect new ones with window.__untranslated() on a Serbian preview.
+ * Prices in dinars, temperatures in °C, furnaces read as kotlovi (gas boilers), sample reviewers
+ * are Serbian. The dollar calculator and the membership club aren't shown on Serbian pages.
+ */
+export const sr: Record<string, string> = {
+  // ── Bars, header, menus ──
+  "Skip to content": "Preskoči na sadržaj",
+  "No cool? No heat?": "Ne hladi? Ne greje?",
+  "We’re on call 24/7 — same flat rate at 3 a.m.": "Dežuramo 24/7 — ista cena i u 3 ujutru.",
+  "Technicians on call now": "Serviseri dežurni sada",
+  Main: "Glavni meni",
+  Mobile: "Meni",
+  Services: "Usluge",
+  "Comfort Club": "Klub udobnosti",
+  "Repair or replace": "Popravka ili zamena",
+  "Repair or replace?": "Popravka ili zamena?",
+  Financing: "Plaćanje na rate",
+  Reviews: "Utisci",
+  About: "O nama",
+  "Schedule service": "Zakažite servis",
+  "Open menu": "Otvori meni",
+  "Close menu": "Zatvori meni",
+  Cooling: "Hlađenje",
+  "AC Repair": "Servis klima uređaja",
+  "AC Installation": "Ugradnja klima uređaja",
+  Heating: "Grejanje",
+  "Furnace Repair": "Servis kotlova",
+  "Furnace Installation": "Ugradnja kotlova",
+  "Air & comfort": "Vazduh i komfor",
+  "Heat Pumps": "Toplotne pumpe",
+  "Ductless Mini-Splits": "Split sistemi",
+  "Indoor Air Quality": "Kvalitet vazduha u kući",
+  "Duct Cleaning & Sealing": "Čišćenje kanala",
+  "Smart Thermostats": "Pametni termostati",
+  "$89 diagnostic": "Dijagnostika 3.000 din",
+  "Same-day diagnosis and repair for every make, most fixed on the first visit.": "Dijagnostika i popravka istog dana za sve proizvođače, većina rešena iz prve posete.",
+  Home: "Početna",
+  Specials: "Akcije",
+  Contact: "Kontakt",
+  Call: "Pozovite",
+  "Call now": "Pozovite",
+  Schedule: "Zakažite",
+
+  // ── Hero ──
+  "Frost crystals spreading across a cold window pane": "Kristali leda na hladnom prozoru",
+  "Close-up of warm orange flames": "Tople narandžaste plamene jezičke izbliza",
+  "Oklahoma weather doesn’t do mild. We do. Same-day AC and furnace repair, honest replacements, and a real person on the phone at 3 a.m. —":
+    "Vreme ovde ne zna za umereno. Mi znamo. Servis klima i grejanja istog dana, poštene zamene i pravi čovek na telefonu i u 3 ujutru —",
+  "at the same flat rate as noon.": "po istoj ceni kao u podne.",
+  "Thermostat — sets the site's heating or cooling mode": "Termostat — prebacuje sajt između grejanja i hlađenja",
+  "COOLING TO": "HLAĐENJE NA",
+  "HEATING TO": "GREJANJE NA",
+  "FAN · AUTO": "VENTILATOR · AUTO",
+  Cool: "Hladi",
+  Heat: "Greje",
+  "Drag · scroll · or use arrow keys": "Prevucite · skrolujte · ili koristite strelice",
+  Pricing: "Cene",
+  "Flat-rate · no overtime": "Fiksne cene · bez doplata",
+
+  // ── Promises, stats ──
+  "Same-day service": "Servis istog dana",
+  "Flat-rate pricing": "Fiksne cene",
+  "No overtime, ever": "Bez doplata za noć i vikend",
+  "NATE-certified techs": "Sertifikovani serviseri",
+  "100% satisfaction guarantee": "Garancija zadovoljstva",
+  "24/7 emergency dispatch": "Hitne intervencije 24/7",
+  "Financing from $89/mo": "Plaćanje na rate",
+  "10-year install warranty": "10 godina garancije na ugradnju",
+  "Parts & labor warranty on every install": "Garancije na delove i rad za svaku ugradnju",
+
+  // ── Statement ──
+  "Flat-rate, in writing": "Fiksna cena, napismeno",
+  "You approve the price before we start. It doesn’t change at midnight, on Sundays or on the Fourth of July.": "Cenu odobravate pre nego što počnemo. Ne menja se u ponoć, nedeljom ni za praznike.",
+  "Fixed right, or it’s free": "Popravljeno kako treba, ili je besplatno",
+  "100% satisfaction guarantee and a 1-year warranty on every repair. Ten years on every install.": "Garancija zadovoljstva i godinu dana garancije na svaku popravku. Deset godina na svaku ugradnju.",
+  "A blazing orange summer sky": "Užareno narandžasto letnje nebo",
+  "JUL · 104°F": "JUL · 40 °C",
+  "A house glowing warm at night behind snowy branches": "Kuća toplo osvetljena noću iza snegom pokrivenih grana",
+  "JAN · 9°F": "JAN · −13 °C",
+
+  // ── Cooling / heating split ──
+  "Cooling in summer, heating in winter": "Leti hlađenje, zimi grejanje",
+  "A straight Oklahoma road under a fiery orange storm sky": "Ravan put pod vatrenim narandžastim olujnim nebom",
+  "July · 104°F": "Jul · 40 °C",
+  "When it’s this hot,": "Kad je ovako vruće,",
+  "we cool.": "mi hladimo.",
+  "AC repair, same day": "Servis klime istog dana",
+  "New AC systems": "Novi klima uređaji",
+  "Ductless mini-splits": "Split sistemi",
+  "Heat pumps": "Toplotne pumpe",
+  "AC repair": "Servis klime",
+  "January · 9°F": "Januar · −13 °C",
+  "When it’s this cold,": "Kad je ovako hladno,",
+  "we heat.": "mi grejemo.",
+  "Furnace repair, 24/7": "Servis kotlova, 24/7",
+  "New furnaces": "Novi kotlovi",
+  "Heat pumps & dual fuel": "Toplotne pumpe i hibridni sistemi",
+  "Smart thermostats": "Pametni termostati",
+  "Furnace repair": "Servis kotlova",
+  "The dryline is moving — keep scrolling": "Front se pomera — skrolujte dalje",
+
+  // ── Services list ──
+  "Everything between the thermostat and the sky.": "Sve između termostata i neba.",
+  "Repairs, replacements and the upgrades that make a house feel different — all at flat prices you see before we start.":
+    "Popravke, zamene i nadogradnje od kojih se kuća oseća drugačije — sve po fiksnim cenama koje vidite pre početka.",
+  "All services": "Sve usluge",
+  "From $5,800": "Od 75.000 din",
+  "From $3,900": "Od 180.000 din",
+  "From $7,200": "Od 450.000 din",
+  "From $3,800": "Od 65.000 din",
+  "From $650": "Od 15.000 din",
+
+  // ── A day on call ──
+  "A day on call": "Jedan dežurni dan",
+  "7:02 a.m. to 11:48 p.m.": "Od 7:02 do 23:48",
+  "Twenty-one trucks, six cities, one flat rate. Here’s a real Tuesday in July — the kind our dispatchers call “normal.”":
+    "Jedna cena, danju i noću. Evo jednog pravog utorka u julu — onakvog kakav naši dispečeri zovu „običan”.",
+  "Technician connecting gauges to an outdoor air conditioning condenser": "Serviser priključuje manometre na spoljnu jedinicu klime",
+  "7:02 AM": "7:02",
+  Edmond: "Sever grada",
+  "No cool, newborn at home": "Klima ne hladi, beba u kući",
+  "Failed capacitor. Replaced from the truck. Cold air by 7:48.": "Pregoreo kondenzator. Zamenjen iz vozila. Hladan vazduh do 7:48.",
+  "Hands adjusting a refrigerant manifold gauge set": "Ruke podešavaju set manometara",
+  "9:30 AM": "9:30",
+  "Nichols Hills": "Stari grad",
+  "Spring tune-up": "Prolećni servis",
+  "21 points, coil rinse, drain flush. Photo report in the owner's inbox by 10:15.": "21 tačka provere, pranje izmenjivača, čišćenje odvoda. Foto-izveštaj vlasniku do 10:15.",
+  "A modern heat pump beside a contemporary home": "Moderna toplotna pumpa pored savremene kuće",
+  "12:15 PM": "12:15",
+  Moore: "Jug grada",
+  "New heat pump, day one": "Nova toplotna pumpa, prvi dan",
+  "Old R-22 system out, 17 SEER2 dual-fuel in. Crew of three, floors covered.": "Stari sistem na R-22 napolje, nova toplotna pumpa unutra. Ekipa od troje, podovi zaštićeni.",
+  "Close-up of flexible aluminum ductwork": "Fleksibilni aluminijumski kanali izbliza",
+  "3:40 PM": "15:40",
+  Norman: "Univerzitetski kraj",
+  "Upstairs 9° too warm": "Na spratu 5° previše toplo",
+  "Crushed flex duct in the attic. Re-hung, sealed, balanced. Upstairs within 2°.": "Zgnječen kanal na tavanu. Ponovo okačen, zaptiven, izbalansiran. Na spratu razlika do 1°.",
+  "Ductless mini-split air handler mounted high on a living room wall": "Unutrašnja jedinica split klime visoko na zidu dnevne sobe",
+  "6:55 PM": "18:55",
+  Yukon: "Zapad grada",
+  "Mini-split for the shop": "Klima za radionicu",
+  "One head, line-hide covers, app set up before dinner.": "Jedna jedinica, maske za cevi, aplikacija podešena pre večere.",
+  "Reflecting pool and a downtown tower silhouetted at dusk in Oklahoma City": "Vodena površina i silueta solitera u sumrak",
+  "11:48 PM": "23:48",
+  "Midtown OKC": "Centar",
+  "After-hours call": "Poziv posle radnog vremena",
+  "Tripped float switch, clogged drain. Same price as noon. Back to sleep by 12:30.": "Proradio plovak, zapušen odvod. Ista cena kao u podne. Nazad u krevet do 0:30.",
+
+  // ── Reviews ──
+  "5 out of 5 stars": "5 od 5 zvezdica",
+  "4 out of 5 stars": "4 od 5 zvezdica",
+  "Jul 2026": "jul 2026.",
+  "Jun 2026": "jun 2026.",
+  "Jan 2026": "jan 2026.",
+  "May 2026": "maj 2026.",
+  "Aug 2026": "avg 2026.",
+  "Dec 2025": "dec 2025.",
+  "Apr 2026": "apr 2026.",
+  "Feb 2026": "feb 2026.",
+  "Mar 2026": "mar 2026.",
+  "Brianna T.": "Bojana T.",
+  "AC quit at 4 pm on a 103° Saturday with a newborn in the house. Marcus was in our driveway by 5:10, found a failed capacitor and had it blowing cold in 25 minutes. Same price they quoted on the phone. Lifelong customers.":
+    "Klima je stala u 16 h, subota, 39°, a beba u kući. Serviser je bio ispred kuće u 17:10, našao pregoreli kondenzator i za 25 minuta klima je ponovo hladila. Ista cena kao preko telefona. Mušterije zauvek.",
+  "Luis G.": "Luka G.",
+  "Three companies quoted us. Dryline was the only one that measured every room and looked in the attic. The new system is so quiet we had to go outside to check it was running. Upstairs finally matches downstairs.":
+    "Tri firme su nam dale ponudu. Samo su oni izmerili svaku prostoriju i pogledali tavan. Nova klima je toliko tiha da smo izlazili napolje da proverimo da li radi. Sprat je konačno jednako prijatan kao prizemlje.",
+  "AC installation": "Ugradnja klime",
+  "Karen W.": "Katarina V.",
+  "Furnace died at 2 a.m. during that ice storm. A real person answered, a tech showed up before 4, and they did NOT charge overtime. The flame sensor was replaced and he checked our CO levels too.":
+    "Kotao je stao u 2 ujutru, usred one ledene oluje. Javio se pravi čovek, serviser je stigao pre 4, i NISU naplatili noćni rad. Zamenio je senzor plamena i proverio nam i nivo ugljen-monoksida.",
+  "Darnell M.": "Dragan M.",
+  "Switched from all-electric strips to a dual-fuel heat pump. Our January bill went from $412 to $186. Jess walked us through every option and never pushed the most expensive one.":
+    "Prešli smo sa električnih grejalica na toplotnu pumpu. Januarski račun nam je pao sa 24.000 na 11.000 din. Objasnili su nam svaku opciju i nikad nisu gurali najskuplju.",
+  "Heat pump": "Toplotna pumpa",
+  "Priya S.": "Ivana S.",
+  "The bonus room over our garage was unusable from June to September. One mini-split later it's the coolest room in the house. The line-set covers look clean and they matched the paint.":
+    "Soba iznad garaže bila je neupotrebljiva od juna do septembra. Posle jedne split klime to je najprijatnija soba u kući. Maske za cevi izgledaju uredno i obojili su ih u boju zida.",
+  "Mini-split": "Split klima",
+  "Tom H.": "Marko H.",
+  "Been in the Comfort Club for three years. They text before tune-ups, show up on time, send photos of everything, and when our blower motor went out in December we were first on the list and got 15% off.":
+    "Već tri godine smo im redovni. Jave se pre servisa, dođu na vreme, pošalju slike svega, a kad nam je u decembru stao ventilator, bili smo prvi na listi i dobili 15% popusta.",
+  "Comfort Club tune-up": "Redovan servis",
+  "Alyssa R.": "Aleksandra R.",
+  "They showed us camera footage of our ducts before and after. I did not need to see what was in there, but I'm glad it's gone. My daughter's allergies are noticeably better.":
+    "Pokazali su nam snimak kanala pre i posle. Nije mi trebalo da vidim šta je bilo unutra, ali drago mi je što ga više nema. Ćerkina alergija je primetno bolja.",
+  "Duct cleaning": "Čišćenje kanala",
+  "Greg P.": "Goran P.",
+  "Honest. The other guys told me I needed a whole new unit. Dryline found a $190 contactor and said the system had years left. That's how you earn a customer.":
+    "Pošteno. Drugi su mi rekli da mi treba cela nova klima. Ovde su našli kontaktor od 4.000 din i rekli da klima ima još godina. Tako se stiče mušterija.",
+  "Maria C.": "Marija C.",
+  "Our 1998 furnace finally gave up. New 96% furnace installed in one day, floors covered, old unit hauled off, and our gas bill dropped by a third. Financing was simple.":
+    "Naš kotao iz 1998. konačno je otkazao. Novi kondenzacioni kotao ugrađen za jedan dan, podovi zaštićeni, stari odnet, a račun za gas pao za trećinu. Plaćanje na rate bilo je jednostavno.",
+  "Furnace installation": "Ugradnja kotla",
+  "Jordan K.": "Jovan K.",
+  "Great install and they ran a C-wire without a fuss. Took a second visit to get the heat pump staging perfect, but they came back the next morning at no charge.":
+    "Odlična ugradnja termostata bez ikakve muke. Trebala je još jedna poseta da se toplotna pumpa savršeno podesi, ali došli su već sledećeg jutra, bez naplate.",
+  "Smart thermostat": "Pametni termostat",
+  "Sam O.": "Saša O.",
+  "Fan motor went out on a Sunday. $0 overtime, fixed in an hour, tech wore boot covers and explained everything. Booked online in two minutes.":
+    "Motor ventilatora je stao u nedelju. Bez doplate za vikend, popravljeno za sat, serviser je nosio navlake za cipele i sve objasnio. Zakazao sam online za dva minuta.",
+  "Hannah B.": "Ana B.",
+  "Cedar season is brutal in our house. They tested the air, recommended a media filter and a UV light — not the $2,000 purifier I expected them to push. Big difference.":
+    "Sezona polena je kod nas brutalna. Izmerili su kvalitet vazduha i preporučili bolji filter i UV lampu — a ne prečišćivač od 200.000 din koji sam očekivala da mi uvale. Velika razlika.",
+  "Indoor air quality": "Kvalitet vazduha",
+  "Read all reviews": "Svi utisci",
+
+  // ── FAQ ──
+  FAQ: "Česta pitanja",
+  "Straight answers.": "Jasni odgovori.",
+  "More questions": "Još pitanja",
+  "Do you really offer same-day service?": "Da li stvarno dolazite istog dana?",
+  "Yes. Calls booked before 2 pm almost always get a same-day visit, and emergency no-cool or no-heat calls are dispatched around the clock. Last summer our average emergency arrival inside the metro was 38 minutes.":
+    "Da. Pozivi pre 14 h skoro uvek dobiju posetu istog dana, a hitni slučajevi (ne hladi, ne greje) primaju se 24 sata dnevno.",
+  "How does flat-rate pricing work?": "Kako funkcionišu fiksne cene?",
+  "After the diagnostic, you get a written price for each repair option before any work starts. The price is the price — it doesn't change if the job takes longer, and it's the same at 2 p.m. or 2 a.m.":
+    "Posle dijagnostike dobijate pisanu cenu za svaku opciju pre nego što bilo šta počne. Cena je cena — ne menja se ako posao potraje i ista je u 14 h i u 2 ujutru.",
+  "Do you charge extra for nights, weekends or holidays?": "Da li naplaćujete više noću, vikendom ili praznicima?",
+  "No. Dryline never charges overtime. Comfort Club members also pay $0 for the diagnostic.": "Ne. Nikada ne naplaćujemo noćni ni vikend rad. Redovni klijenti ne plaćaju dijagnostiku.",
+  "How long should an AC or furnace last in Oklahoma?": "Koliko traju klima uređaj i kotao?",
+  "Air conditioners and heat pumps typically last 12–15 years here (our summers are hard on them). Gas furnaces often last 18–20 years. Regular tune-ups add years to both.":
+    "Klima uređaji i toplotne pumpe obično traju 12–15 godina (leta su im teška). Gasni kotlovi često traju 18–20 godina. Redovan servis i jednom i drugom dodaje godine.",
+  "Should I repair or replace my system?": "Da li da popravim ili zamenim uređaj?",
+  "A good rule of thumb: multiply the system's age by the repair cost. If it's over $5,000, replacement usually makes more sense. Our repair-or-replace calculator walks through it with your numbers.":
+    "Dobro pravilo: ako je uređaj stariji od 12 godina, a popravka košta više od trećine novog, zamena se obično više isplati. Rado ćemo proći kroz računicu sa vama.",
+  "What's included in a Comfort Club tune-up?": "Šta obuhvata redovan servis?",
+  "A 21-point inspection: refrigerant pressures, electrical connections, capacitor readings, coil and drain cleaning, burner and flame-sensor service, CO test, airflow and thermostat check — with photos of everything.":
+    "Proveru u 21 tačku: pritisak gasa, električne veze, kondenzatori, čišćenje izmenjivača i odvoda, servis gorionika i senzora plamena, test ugljen-monoksida, protok vazduha i termostat — sa slikama svega.",
+
+  // ── Closing CTA, footer, pill ──
+  "A towering Oklahoma thunderstorm with lightning over the prairie": "Ogroman olujni oblak sa munjama nad ravnicom",
+  "When the weather turns, we’re already on the way.": "Kad se vreme promeni, mi smo već na putu.",
+  "A real dispatcher answers 24/7. Tell us what’s going on and you’ll have an arrival window before you hang up.": "Pravi dispečer se javlja 24/7. Recite nam šta se dešava i znaćete kad stižemo pre nego što spustite slušalicu.",
+  "Schedule online in 2 minutes": "Zakažite online za 2 minuta",
+  Company: "Firma",
+  "About Dryline": "O nama",
+  "Comfort notes (blog)": "Saveti (blog)",
+  "Service areas": "Gde radimo",
+  "Visit & call": "Posetite i pozovite",
+  "Design & development:": "Dizajn i izrada:",
+  "No cool? No heat? On call 24/7": "Ne hladi? Ne greje? Dežuramo 24/7",
+  "Dismiss concept site notice": "Zatvori obaveštenje",
+};

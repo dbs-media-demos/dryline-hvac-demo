@@ -1,7 +1,6 @@
-import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/PageShell";
-import { JsonLd } from "@/components/layout/JsonLd";
 import { Hero } from "@/components/home/Hero";
 import { Stats } from "@/components/home/Stats";
 import { Statement } from "@/components/home/Statement";
@@ -17,26 +16,26 @@ import { CtaBand } from "@/components/sections/CtaBand";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArrowIcon } from "@/components/ui/Icons";
-import { buildMetadata } from "@/lib/seo";
-import { site } from "@/lib/site";
+import { defaultBiz } from "@/lib/biz";
+import { L, type Biz } from "@/lib/biz-core";
+import { scrub } from "@/lib/scrub";
+import { PreviewMap } from "@/components/preview/PreviewMap";
 import { faqs } from "@/content/faqs";
-import { services } from "@/content/services";
-import { faqSchema, graph, offerCatalogSchema, webPageSchema } from "@/lib/schema";
 
-const title = "Dryline Heat & Air | AC & Furnace Repair in Oklahoma City";
-const description =
-  "Same-day AC repair, furnace repair and new systems across OKC, Edmond, Norman, Moore and Yukon. Flat-rate pricing, no overtime, 24/7 emergency service. Call (405) 555-0142.";
+export const homeFaqs = faqs.filter((_, i) => [0, 2, 3, 5, 6, 9].includes(i));
 
-export const metadata: Metadata = buildMetadata({ title, description, path: "/", absoluteTitle: true, eyebrow: "Heating & air · Oklahoma City" });
-
-const homeFaqs = faqs.filter((_, i) => [0, 2, 3, 5, 6, 9].includes(i));
-
-export default function Home() {
+/**
+ * The homepage sections. The concept site renders them as they are; a personalised preview
+ * (/for/<token>) passes a real business: its name, phone, hours, rating and a map of its address
+ * replace Dryline's, and the Oklahoma-specific lines step aside.
+ */
+export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; children?: ReactNode }) {
   return (
     <PageShell>
-      <Hero />
-      <Stats />
-      <Statement />
+      {children}
+      <Hero biz={biz} />
+      <Stats biz={biz} />
+      <Statement biz={biz} />
       <DrylineSplit />
 
       <section className="py-24 md:py-36" aria-labelledby="services-title">
@@ -59,6 +58,9 @@ export default function Home() {
 
       <DayOnCall />
 
+      {/* The calculator and the club are priced in dollars (SEER, US bills): not on Serbian previews */}
+      {biz.lang !== "sr" && (
+        <>
       <section className="py-24 md:py-36" aria-labelledby="calc-title">
         <div className="mx-auto max-w-[1480px] px-5 md:px-8">
           <SectionHead eyebrow="Repair or replace?" title={<span id="calc-title">Should you fix it, or let it go?</span>}>
@@ -80,9 +82,14 @@ export default function Home() {
           </div>
         </div>
       </section>
+        </>
+      )}
 
-      <ReviewsSection />
+      <ReviewsSection biz={biz} />
 
+      {biz.preview ? (
+        <PreviewMap biz={biz} />
+      ) : (
       <section className="py-24 md:py-36" aria-labelledby="area-title">
         <div className="mx-auto grid max-w-[1480px] gap-14 px-5 md:px-8 lg:grid-cols-[1fr_1.15fr] lg:items-center">
           <div>
@@ -98,12 +105,13 @@ export default function Home() {
           </Reveal>
         </div>
       </section>
+      )}
 
       <section className="pb-24 md:pb-36" aria-labelledby="faq-title">
         <div className="mx-auto grid max-w-[1480px] gap-12 px-5 md:px-8 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
             <SectionHead eyebrow="FAQ" title={<span id="faq-title">Straight answers.</span>}>
-              Still wondering? Call {site.phoneDisplay} — a real person picks up, day or night.
+              {L(biz, `Still wondering? Call ${biz.phoneDisplay} — a real person picks up, day or night.`, `Imate još pitanja? Pozovite ${biz.phoneDisplay} — javlja se pravi čovek, danju i noću.`)}
             </SectionHead>
             <Reveal className="mt-8">
               <Link href="/faq" className="btn btn-navy">
@@ -112,20 +120,13 @@ export default function Home() {
             </Reveal>
           </div>
           <Reveal>
-            <FaqList items={homeFaqs} />
+            <FaqList items={homeFaqs.map((f) => ({ ...f, a: scrub(f.a, biz) }))} />
           </Reveal>
         </div>
       </section>
 
-      <CtaBand />
+      <CtaBand biz={biz} />
 
-      <JsonLd
-        data={graph(
-          webPageSchema({ path: "/", name: title, description }),
-          offerCatalogSchema(services.map((s) => ({ name: s.name, path: `/services/${s.slug}` }))),
-          faqSchema(homeFaqs),
-        )}
-      />
     </PageShell>
   );
 }

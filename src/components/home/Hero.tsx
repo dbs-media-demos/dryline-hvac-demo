@@ -5,7 +5,9 @@ import { LiveWeather } from "@/components/mode/LiveWeather";
 import { Airflow } from "@/components/fx/Airflow";
 import { PhoneIcon, StarIcon } from "@/components/ui/Icons";
 import { img } from "@/lib/images";
-import { site, telHref } from "@/lib/site";
+import { site } from "@/lib/site";
+import { defaultBiz } from "@/lib/biz";
+import { num, telOf, type Biz } from "@/lib/biz-core";
 
 function Letters({ text, accentFrom }: { text: string; accentFrom: number }) {
   const words = text.split(" ");
@@ -26,7 +28,8 @@ function Letters({ text, accentFrom }: { text: string; accentFrom: number }) {
   );
 }
 
-export function Hero() {
+export function Hero({ biz = defaultBiz }: { biz?: Biz }) {
+  const sr = biz.lang === "sr";
   return (
     <section className="theme-navy relative isolate flex min-h-[100svh] flex-col overflow-hidden" aria-labelledby="hero-title">
       {/* Photo layers: frost for cooling, flame for heating — crossfaded by --mix. */}
@@ -50,15 +53,16 @@ export function Hero() {
         <div className="contents lg:col-span-7 lg:block">
           <h1 id="hero-title" className="anim-fade eyebrow order-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-frost/85" style={{ "--d": "0.05s" } as React.CSSProperties}>
             <span className="h-px w-8 bg-accent" aria-hidden />
-            Heating &amp; air conditioning · Oklahoma City
+            {biz.preview ? `${sr ? "Klima i grejanje" : "Heating & air conditioning"} · ${biz.area}` : "Heating & air conditioning · Oklahoma City"}
           </h1>
 
           <div className="anim-heading relative order-2 lg:mt-6" aria-hidden style={{ "--d": "0.1s" } as React.CSSProperties}>
             <p className="mode-cool display-xl">
-              <Letters text="Cool it down." accentFrom={2} />
+              {/* Letters splits the text as it renders, so the Serbian is chosen here */}
+              <Letters text={sr ? "Hladno. Odmah." : "Cool it down."} accentFrom={sr ? 1 : 2} />
             </p>
             <p className="mode-heat display-xl">
-              <Letters text="Warm it up." accentFrom={2} />
+              <Letters text={sr ? "Toplo. Odmah." : "Warm it up."} accentFrom={sr ? 1 : 2} />
             </p>
           </div>
 
@@ -68,8 +72,8 @@ export function Hero() {
           </p>
 
           <div className="anim-fade order-5 flex flex-col gap-3 sm:flex-row lg:mt-9" style={{ "--d": "0.35s" } as React.CSSProperties}>
-            <a href={telHref} className="btn btn-accent on-dark min-h-[56px] px-7 text-[1.02rem]">
-              <PhoneIcon /> Call {site.phoneDisplay}
+            <a href={telOf(biz)} className="btn btn-accent on-dark min-h-[56px] px-7 text-[1.02rem]">
+              <PhoneIcon /> Call {biz.phoneDisplay}
             </a>
             <Link href="/schedule" className="btn btn-ghost min-h-[56px] px-7 text-[1.02rem]">
               Schedule service
@@ -84,20 +88,30 @@ export function Hero() {
 
       <div className="anim-fade relative mx-auto w-full max-w-[1480px] px-5 pb-8 md:px-8" style={{ "--d": "0.5s" } as React.CSSProperties}>
         <div className="grid grid-cols-2 gap-x-6 gap-y-5 border-t border-white/15 pt-6 md:grid-cols-4">
-          <p>
-            <span className="flex items-center gap-1 text-accent" role="img" aria-label={`Rated ${site.rating.value} out of 5`}>
-              {Array.from({ length: 5 }, (_, i) => (
-                <StarIcon key={i} width={14} height={14} />
-              ))}
-            </span>
-            <span className="mt-1 block font-display text-[1.05rem] tracking-[-0.03em]">
-              {site.rating.value} <span className="text-frost/60">· {site.rating.count.toLocaleString("en-US")} Google reviews</span>
-            </span>
-          </p>
-          <p>
-            <span className="block font-mono text-[0.66rem] tracking-[0.14em] text-frost/60 uppercase">Emergency arrival</span>
-            <span className="mt-1 block font-display text-[1.05rem] tracking-[-0.03em]">{site.stats.arrival} min average</span>
-          </p>
+          {biz.rating && (
+            <p>
+              <span className="flex items-center gap-1 text-accent" role="img" aria-label={`${num(biz, biz.rating.value)} / 5`}>
+                {Array.from({ length: 5 }, (_, i) => (
+                  <StarIcon key={i} width={14} height={14} />
+                ))}
+              </span>
+              <span className="mt-1 block font-display text-[1.05rem] tracking-[-0.03em]">
+                {num(biz, biz.rating.value)}{" "}
+                <span className="text-frost/60">· {biz.rating.count.toLocaleString(sr ? "sr-RS" : "en-US")} Google {sr ? "recenzija" : "reviews"}</span>
+              </span>
+            </p>
+          )}
+          {biz.preview ? (
+            <p>
+              <span className="block font-mono text-[0.66rem] tracking-[0.14em] text-frost/60 uppercase">{sr ? "Radno vreme" : "Hours"}</span>
+              <span className="mt-1 block font-display text-[1.05rem] tracking-[-0.03em]">{biz.hoursSummary || (sr ? "Pozovite nas" : "Call us")}</span>
+            </p>
+          ) : (
+            <p>
+              <span className="block font-mono text-[0.66rem] tracking-[0.14em] text-frost/60 uppercase">Emergency arrival</span>
+              <span className="mt-1 block font-display text-[1.05rem] tracking-[-0.03em]">{site.stats.arrival} min average</span>
+            </p>
+          )}
           <p>
             <span className="block font-mono text-[0.66rem] tracking-[0.14em] text-frost/60 uppercase">Pricing</span>
             <span className="mt-1 block font-display text-[1.05rem] tracking-[-0.03em]">Flat-rate · no overtime</span>

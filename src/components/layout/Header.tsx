@@ -7,12 +7,16 @@ import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { Logo } from "@/components/brand/Logo";
 import { ArrowUpRight, PhoneIcon } from "@/components/ui/Icons";
-import { nav, site, telHref } from "@/lib/site";
+import { nav } from "@/lib/site";
+import { useBiz } from "@/components/preview/BizContext";
+import { telOf } from "@/lib/biz-core";
 import { services, kindLabel, type ServiceKind } from "@/content/services";
 
 const groups: ServiceKind[] = ["cool", "heat", "air"];
 
 export function Header() {
+  const biz = useBiz();
+  const telHref = telOf(biz);
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -102,9 +106,9 @@ export function Header() {
           </nav>
 
           <div className="relative z-10 flex items-center gap-2">
-            <a href={telHref} className="hidden items-center gap-2 rounded-full px-3 py-2 font-mono text-[0.8rem] tracking-tight xl:flex" aria-label={`Call ${site.phoneDisplay}`}>
+            <a href={telHref} className="hidden items-center gap-2 rounded-full px-3 py-2 font-mono text-[0.8rem] tracking-tight xl:flex" aria-label={`${biz.lang === "sr" ? "Pozovite" : "Call"} ${biz.phoneDisplay}`}>
               <PhoneIcon width={16} height={16} />
-              {site.phoneDisplay}
+              {biz.phoneDisplay}
             </a>
             <Link href="/schedule" className="btn btn-accent hidden min-h-[44px] px-5 text-[0.9rem] sm:inline-flex">
               Schedule service
@@ -207,7 +211,7 @@ export function Header() {
         </nav>
         <div className="mt-8 grid gap-3">
           <a href={telHref} className="btn btn-accent w-full">
-            <PhoneIcon /> Call {site.phoneDisplay}
+            <PhoneIcon /> Call {biz.phoneDisplay}
           </a>
           <Link href="/schedule" className="btn btn-ghost w-full">
             Schedule service

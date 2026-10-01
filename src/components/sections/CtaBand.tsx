@@ -4,16 +4,19 @@ import { Parallax, SplitReveal, Reveal } from "@/components/ui/Reveal";
 import { PhoneIcon } from "@/components/ui/Icons";
 import { OpenBadge } from "@/components/ui/OpenBadge";
 import { img, type Photo as PhotoT } from "@/lib/images";
-import { site, telHref } from "@/lib/site";
+import { defaultBiz } from "@/lib/biz";
+import { telOf, type Biz } from "@/lib/biz-core";
 
 export function CtaBand({
   title = "When the weather turns, we’re already on the way.",
   photo = img.stormSupercell,
   body = "A real dispatcher answers 24/7. Tell us what’s going on and you’ll have an arrival window before you hang up.",
+  biz = defaultBiz,
 }: {
   title?: string;
   photo?: PhotoT;
   body?: string;
+  biz?: Biz;
 }) {
   return (
     <section className="theme-navy relative isolate overflow-hidden" aria-labelledby="cta-title">
@@ -32,8 +35,8 @@ export function CtaBand({
         </SplitReveal>
         <Reveal className="lede mt-6 max-w-[34rem] text-frost/75">{body}</Reveal>
         <Reveal className="mt-9 flex flex-col gap-3 sm:flex-row">
-          <a href={telHref} className="btn btn-accent on-dark min-h-[56px] px-7">
-            <PhoneIcon /> Call {site.phoneDisplay}
+          <a href={telOf(biz)} className="btn btn-accent on-dark min-h-[56px] px-7">
+            <PhoneIcon /> Call {biz.phoneDisplay}
           </a>
           <Link href="/schedule" className="btn btn-ghost min-h-[56px] px-7">
             Schedule online in 2 minutes

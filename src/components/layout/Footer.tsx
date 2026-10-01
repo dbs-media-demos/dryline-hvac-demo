@@ -5,7 +5,9 @@ import { PhoneIcon, MailIcon, PinIcon } from "@/components/ui/Icons";
 import { services } from "@/content/services";
 import { cities } from "@/content/cities";
 import { hoursTable } from "@/lib/hours";
-import { site, telHref, mailHref, agencyName, agencyUrl } from "@/lib/site";
+import { site, mailHref, agencyName, agencyUrl } from "@/lib/site";
+import { defaultBiz } from "@/lib/biz";
+import { DAY_NAMES, dayRange, telOf, weekFromMonday, type Biz } from "@/lib/biz-core";
 
 const company = [
   { href: "/about", label: "About Dryline" },
@@ -19,7 +21,7 @@ const company = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function Footer() {
+export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
   return (
     <footer className="theme-navy relative overflow-hidden pb-40 lg:pb-10">
       <div
@@ -58,64 +60,89 @@ export function Footer() {
             <ul className="mt-5 space-y-2.5">
               <li>
                 <Link href="/service-areas" className="link-underline text-frost/85 hover:text-frost">
-                  Oklahoma City metro
+                  {biz.preview ? biz.area : "Oklahoma City metro"}
                 </Link>
               </li>
-              {cities.map((c) => (
+              {!biz.preview && cities.map((c) => (
                 <li key={c.slug}>
                   <Link href={`/service-areas/${c.slug}`} className="link-underline text-frost/85 hover:text-frost">
                     {c.name}
                   </Link>
                 </li>
               ))}
-              <li className="text-frost/60">Mustang · Nichols Hills · Bethany · Midwest City</li>
+              {!biz.preview && <li className="text-frost/60">Mustang · Nichols Hills · Bethany · Midwest City</li>}
             </ul>
           </div>
           <div>
             <p className="eyebrow text-muted">Visit &amp; call</p>
             <ul className="mt-5 space-y-3 text-frost/85">
               <li>
-                <a href={telHref} className="flex items-center gap-3 hover:text-frost">
-                  <PhoneIcon width={18} height={18} className="text-accent" /> {site.phoneDisplay}
+                <a href={telOf(biz)} className="flex items-center gap-3 hover:text-frost">
+                  <PhoneIcon width={18} height={18} className="text-accent" /> {biz.phoneDisplay}
                 </a>
               </li>
-              <li>
-                <a href={mailHref} className="flex items-center gap-3 hover:text-frost">
-                  <MailIcon width={18} height={18} className="text-accent" /> {site.email}
-                </a>
-              </li>
+              {!biz.preview && (
+                <li>
+                  <a href={mailHref} className="flex items-center gap-3 hover:text-frost">
+                    <MailIcon width={18} height={18} className="text-accent" /> {site.email}
+                  </a>
+                </li>
+              )}
               <li className="flex items-start gap-3">
                 <PinIcon width={18} height={18} className="mt-1 text-accent" />
                 <span>
-                  {site.address.street}
-                  <br />
-                  {site.address.city}, {site.address.region} {site.address.postal}
+                  {biz.preview ? (
+                    biz.address.full
+                  ) : (
+                    <>
+                      {site.address.street}
+                      <br />
+                      {site.address.city}, {site.address.region} {site.address.postal}
+                    </>
+                  )}
                 </span>
               </li>
             </ul>
             <OpenBadge className="mt-6 text-frost/85" />
             <dl className="mt-5 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-[0.9rem]">
-              {hoursTable.map((h) => (
-                <div key={h.day} className="contents">
-                  <dt className="text-frost/60">{h.day}</dt>
-                  <dd className="tabular text-frost/85">{h.value}</dd>
-                </div>
-              ))}
+              {biz.preview
+                ? weekFromMonday(biz.hours ?? []).map((h) => (
+                    <div key={h.day} className="contents">
+                      <dt className="text-frost/60">{DAY_NAMES[biz.lang][h.day]}</dt>
+                      <dd className="tabular text-frost/85">{dayRange(h, biz.lang)}</dd>
+                    </div>
+                  ))
+                : hoursTable.map((h) => (
+                    <div key={h.day} className="contents">
+                      <dt className="text-frost/60">{h.day}</dt>
+                      <dd className="tabular text-frost/85">{h.value}</dd>
+                    </div>
+                  ))}
             </dl>
           </div>
         </div>
 
         <div className="flex items-end gap-4 border-t border-line pt-10 md:gap-8" aria-hidden>
           <LogoMark tone="dark" className="h-[15vw] w-[15vw] max-h-[190px] max-w-[190px]" />
-          <span className="font-display text-[19vw] leading-[0.72] font-semibold tracking-[-0.08em] lg:text-[16.5rem]">dryline</span>
+          <span className="font-display text-[19vw] leading-[0.72] font-semibold tracking-[-0.08em] lg:text-[16.5rem]">{biz.preview ? biz.shortName.toLowerCase() : "dryline"}</span>
         </div>
 
         <div className="mt-10 flex flex-col gap-4 text-[0.8rem] text-frost/60 md:flex-row md:items-center md:justify-between">
           <p>
-            © {new Date().getFullYear()} {site.legalName} · {site.license} · <Link href="/privacy" className="link-underline">Privacy</Link>
+            {biz.preview ? (
+              `© ${new Date().getFullYear()} ${biz.name}`
+            ) : (
+              <>
+                © {new Date().getFullYear()} {site.legalName} · {site.license} · <Link href="/privacy" className="link-underline">Privacy</Link>
+              </>
+            )}
           </p>
           <p>
-            A concept site — Dryline is a fictional company.{" "}
+            {biz.preview
+              ? biz.lang === "sr"
+                ? `Pregled početne strane napravljen za ${biz.name}.`
+                : `A preview homepage made for ${biz.name}.`
+              : "A concept site — Dryline is a fictional company."}{" "}
             <a href={agencyUrl} target="_blank" rel="noopener" className="link-underline text-frost/85">
               Design &amp; development: {agencyName}
             </a>

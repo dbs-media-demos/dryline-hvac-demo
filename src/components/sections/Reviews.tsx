@@ -2,6 +2,9 @@ import Link from "next/link";
 import clsx from "clsx";
 import { reviews, ratingBreakdown, type Review } from "@/content/reviews";
 import { site } from "@/lib/site";
+import { defaultBiz } from "@/lib/biz";
+import { num, type Biz } from "@/lib/biz-core";
+import { scrub } from "@/lib/scrub";
 import { GoogleG, StarIcon, ArrowIcon } from "@/components/ui/Icons";
 import { Marquee } from "@/components/ui/Marquee";
 import { Reveal } from "@/components/ui/Reveal";
@@ -42,15 +45,18 @@ export function ReviewCard({ r, className }: { r: Review; className?: string }) 
   );
 }
 
-export function RatingSummary({ className }: { className?: string }) {
+export function RatingSummary({ className, biz = defaultBiz }: { className?: string; biz?: Biz }) {
+  const rating = biz.rating ?? site.rating;
   return (
     <div className={clsx("flex flex-col gap-6 rounded-[28px] bg-white p-7 ring-1 ring-line sm:flex-row sm:items-center sm:gap-10", className)}>
       <div className="flex items-center gap-4">
         <GoogleG width={40} height={40} />
         <div>
-          <p className="font-display text-[3.2rem] leading-none tracking-[-0.06em]">{site.rating.value}</p>
+          <p className="font-display text-[3.2rem] leading-none tracking-[-0.06em]">{num(biz, rating.value)}</p>
           <Stars n={5} className="mt-2" />
-          <p className="mt-1 text-[0.85rem] text-muted">{site.rating.count.toLocaleString("en-US")} Google reviews</p>
+          <p className="mt-1 text-[0.85rem] text-muted">
+            {rating.count.toLocaleString(biz.lang === "sr" ? "sr-RS" : "en-US")} {biz.lang === "sr" ? "Google recenzija" : "Google reviews"}
+          </p>
         </div>
       </div>
       <dl className="grid flex-1 gap-1.5">
@@ -68,17 +74,18 @@ export function RatingSummary({ className }: { className?: string }) {
   );
 }
 
-export function ReviewsMarquee() {
-  const half = Math.ceil(reviews.length / 2);
+export function ReviewsMarquee({ biz = defaultBiz }: { biz?: Biz }) {
+  const list = biz.preview ? reviews.map((r) => ({ ...r, text: scrub(r.text, biz), area: biz.area })) : reviews;
+  const half = Math.ceil(list.length / 2);
   return (
     <div className="grid gap-5">
       <Marquee duration={70} pausable>
-        {reviews.slice(0, half).map((r) => (
+        {list.slice(0, half).map((r) => (
           <ReviewCard key={r.name} r={r} className="mr-5 w-[320px] sm:w-[380px]" />
         ))}
       </Marquee>
       <Marquee duration={80} reverse pausable>
-        {reviews.slice(half).map((r) => (
+        {list.slice(half).map((r) => (
           <ReviewCard key={r.name} r={r} className="mr-5 w-[320px] sm:w-[380px]" />
         ))}
       </Marquee>
@@ -86,7 +93,15 @@ export function ReviewsMarquee() {
   );
 }
 
-export function ReviewsSection() {
+export function ReviewsSection({ biz = defaultBiz }: { biz?: Biz }) {
+  const sr = biz.lang === "sr";
+  const heading = !biz.preview
+    ? "1,284 neighbors can’t all be wrong."
+    : sr
+      ? "Komšije to kažu bolje od nas."
+      : biz.rating
+        ? `${biz.rating.count.toLocaleString("en-US")} neighbors can’t all be wrong.`
+        : "Neighbors say it better than we can.";
   return (
     <section className="overflow-hidden bg-mist/60 py-24 md:py-32" aria-labelledby="reviews-title">
       <div className="mx-auto grid max-w-[1480px] gap-10 px-5 md:px-8 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -98,16 +113,25 @@ export function ReviewsSection() {
           </Reveal>
           <Reveal>
             <h2 id="reviews-title" className="display-lg mt-5 max-w-[15ch]">
-              1,284 neighbors can&rsquo;t all be wrong.
+              {heading}
             </h2>
           </Reveal>
         </div>
-        <Reveal>
-          <RatingSummary className="lg:w-[560px]" />
-        </Reveal>
+        {(!biz.preview || biz.rating) && (
+          <Reveal>
+            <RatingSummary className="lg:w-[560px]" biz={biz} />
+          </Reveal>
+        )}
       </div>
       <div className="mt-14">
-        <ReviewsMarquee />
+        <ReviewsMarquee biz={biz} />
+        {biz.preview && (
+          <p className="mx-auto mt-8 max-w-[1480px] px-5 text-[0.95rem] text-muted md:px-8">
+            {sr
+              ? "Primeri utisaka. Na vašem pravom sajtu ovde stoje vaše najnovije Google recenzije, automatski."
+              : "Sample reviews. On your live site this shows your latest Google reviews, updated automatically."}
+          </p>
+        )}
       </div>
       <div className="mt-10 flex justify-center px-5">
         <Link href="/reviews" className="btn btn-navy">

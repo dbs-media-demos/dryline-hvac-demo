@@ -1,8 +1,19 @@
 import { Photo } from "@/components/ui/Photo";
 import { Parallax, Reveal, ScrubWords } from "@/components/ui/Reveal";
 import { img } from "@/lib/images";
+import { defaultBiz } from "@/lib/biz";
+import type { Biz } from "@/lib/biz-core";
 
-export function Statement() {
+const statement = {
+  concept: "104° in July. 9° in January. Sometimes a forty-degree swing before dinner. Oklahoma weather doesn't do mild — so since 2011 we've kept 12,400 metro homes on the comfortable side of the line.",
+  en: "Scorching summers. Freezing winters. Sometimes a forty-degree swing before dinner. Weather here doesn't do mild — so we keep homes on the comfortable side of the line, whatever the forecast says.",
+  sr: "Leti 40°. Zimi minus deset. Ponekad skok od dvadeset stepeni pre večere. Vreme ovde ne zna za umereno — zato mi držimo vaš dom na prijatnoj strani, šta god prognoza kaže.",
+};
+
+export function Statement({ biz = defaultBiz }: { biz?: Biz }) {
+  // ScrubWords splits words as it renders, so the copy is picked here rather than translated later
+  const text = !biz.preview ? statement.concept : biz.lang === "sr" ? statement.sr : statement.en;
+  const accent = !biz.preview ? ["104°", "9°", "line"] : biz.lang === "sr" ? ["40°.", "deset.", "strani,"] : ["summers.", "winters.", "line,"];
   return (
     <section className="relative overflow-hidden py-24 md:py-36" aria-labelledby="statement-title">
       <div className="mx-auto grid max-w-[1480px] gap-16 px-5 md:px-8 lg:grid-cols-12 lg:gap-10">
@@ -10,13 +21,13 @@ export function Statement() {
           <Reveal>
             <h2 id="statement-title" className="eyebrow text-accent-auto flex items-center gap-3">
               <span className="h-px w-8 bg-current" aria-hidden />
-              Why Dryline
+              {biz.preview ? (biz.lang === "sr" ? "Zašto mi" : `Why ${biz.shortName}`) : "Why Dryline"}
             </h2>
           </Reveal>
           <ScrubWords
             className="mt-8 font-display text-[clamp(1.75rem,3.6vw,3.35rem)] leading-[1.08] tracking-[-0.045em]"
-            text="104° in July. 9° in January. Sometimes a forty-degree swing before dinner. Oklahoma weather doesn't do mild — so since 2011 we've kept 12,400 metro homes on the comfortable side of the line."
-            accent={["104°", "9°", "line"]}
+            text={text}
+            accent={accent}
           />
           <Reveal className="mt-12 grid max-w-[40rem] gap-8 sm:grid-cols-2" stagger={0.1}>
             <div className="border-t border-line pt-5">

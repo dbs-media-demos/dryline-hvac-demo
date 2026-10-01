@@ -2,8 +2,12 @@ import { Counter } from "@/components/ui/Counter";
 import { Reveal } from "@/components/ui/Reveal";
 import { Marquee } from "@/components/ui/Marquee";
 import { site } from "@/lib/site";
+import { defaultBiz } from "@/lib/biz";
+import { L, openDays, type Biz } from "@/lib/biz-core";
 
-const stats = [
+type Stat = { value: number; decimals?: number; suffix: string; label: string };
+
+const conceptStats: Stat[] = [
   { value: site.stats.homes, suffix: "+", label: "Metro homes kept comfortable since 2011" },
   { value: site.stats.arrival, suffix: " min", label: "Average emergency arrival, summer 2026" },
   { value: site.rating.value, decimals: 1, suffix: "★", label: `From ${site.rating.count.toLocaleString("en-US")} Google reviews` },
@@ -21,9 +25,20 @@ const promises = [
   "10-year install warranty",
 ];
 
-export function Stats() {
+function previewStats(biz: Biz): Stat[] {
+  const days = openDays(biz);
+  return [
+    ...(biz.rating ? [{ value: biz.rating.value, decimals: 1, suffix: "★", label: L(biz, `From ${biz.rating.count.toLocaleString("en-US")} Google reviews`, `Iz ${biz.rating.count} Google recenzija`) }] : []),
+    ...(days ? [{ value: days, suffix: "", label: L(biz, "Days a week the office is open", "Dana nedeljno radimo") }] : []),
+    { value: 24, suffix: "/7", label: L(biz, "Emergency line, nights and weekends included", "Hitne intervencije, i noću i vikendom") },
+    { value: 10, suffix: L(biz, " yrs", " god."), label: "Parts & labor warranty on every install" },
+  ];
+}
+
+export function Stats({ biz = defaultBiz }: { biz?: Biz }) {
+  const stats = biz.preview ? previewStats(biz) : conceptStats;
   return (
-    <section className="py-20 md:py-28" aria-label="Dryline by the numbers">
+    <section className="py-20 md:py-28" aria-label={biz.preview ? biz.name : "Dryline by the numbers"}>
       <Marquee duration={45} className="border-y border-line py-5">
         {promises.map((p) => (
           <span key={p} className="flex items-center gap-8 pr-8 font-display text-[clamp(1.4rem,2.6vw,2.2rem)] tracking-[-0.04em] whitespace-nowrap">

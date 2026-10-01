@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { site, telHref } from "@/lib/site";
+import { useBiz } from "@/components/preview/BizContext";
+import { telOf } from "@/lib/biz-core";
 import { techsAvailable } from "@/lib/hours";
 import { PhoneIcon } from "@/components/ui/Icons";
 
 /** Desktop: thin always-on bar above the header. Phones get the same promise in the bottom bar. */
 export function EmergencyBar() {
+  const biz = useBiz();
   const [techs, setTechs] = useState<number | null>(null);
   useEffect(() => {
     const update = () => setTechs(techsAvailable());
@@ -28,11 +30,11 @@ export function EmergencyBar() {
         <div className="flex items-center gap-5">
           <p className="flex items-center gap-2 font-mono text-[0.72rem] tracking-wide text-frost/85" aria-live="polite">
             <span className="live-dot" aria-hidden />
-            {techs === null ? "Technicians on call now" : `${techs} technicians available now`}
+            {techs === null || biz.preview ? "Technicians on call now" : `${techs} technicians available now`}
           </p>
-          <a href={telHref} className="flex items-center gap-2 rounded-full bg-accent px-3 py-1 font-semibold text-navy transition-transform hover:scale-[1.04]">
+          <a href={telOf(biz)} className="flex items-center gap-2 rounded-full bg-accent px-3 py-1 font-semibold text-navy transition-transform hover:scale-[1.04]">
             <PhoneIcon width={14} height={14} />
-            {site.phoneDisplay}
+            {biz.phoneDisplay}
           </a>
         </div>
       </div>

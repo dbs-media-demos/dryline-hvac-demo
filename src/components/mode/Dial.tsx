@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import clsx from "clsx";
+import { useBiz } from "@/components/preview/BizContext";
 import { gsap } from "@/lib/gsap";
 import { TEMP_MAX, TEMP_MIN, getTemp, modeFor, setTemp, subscribeTemp } from "@/lib/mode";
 import { FlameIcon, SnowIcon } from "@/components/ui/Icons";
@@ -40,6 +41,7 @@ const readHint = () => {
 const TICKS = Array.from({ length: (TEMP_MAX - TEMP_MIN) * 2 + 1 }, (_, i) => TEMP_MIN + i / 2);
 
 export function Dial({ className }: { className?: string }) {
+  const biz = useBiz();
   const svg = useRef<SVGSVGElement>(null);
   const temp = useSyncExternalStore(subscribeTemp, getTemp, () => null);
   const [dragging, setDragging] = useState(false);
@@ -141,7 +143,10 @@ export function Dial({ className }: { className?: string }) {
   };
 
   const t = temp ?? 68;
-  const shown = Math.round(t);
+  // Serbian previews read Celsius; the dial's logic stays in °F
+  const celsius = biz.lang === "sr";
+  const toC = (f: number) => Math.round(((f - 32) * 5) / 9);
+  const shown = celsius ? toC(t) : Math.round(t);
   const mode = modeFor(t);
   const angle = toAngle(t);
   const knob = polar(angle, R);
@@ -246,10 +251,10 @@ export function Dial({ className }: { className?: string }) {
 
         {/* end labels */}
         <text {...polar(START - 8, R + 44)} textAnchor="middle" fill="rgba(245,249,251,0.6)" fontFamily="var(--font-mono)" fontSize="11">
-          60°
+          {celsius ? `${toC(60)}°` : "60°"}
         </text>
         <text {...polar(START + SWEEP + 8, R + 44)} textAnchor="middle" fill="rgba(245,249,251,0.6)" fontFamily="var(--font-mono)" fontSize="11">
-          85°
+          {celsius ? `${toC(85)}°` : "85°"}
         </text>
       </svg>
 
