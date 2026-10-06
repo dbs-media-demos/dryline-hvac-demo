@@ -29,7 +29,7 @@ export function PageHero({ eyebrow, title, lede, photo, crumbs, children, aside,
   ) : null;
 
   return (
-    <section className={clsx("theme-navy relative isolate flex flex-col justify-end overflow-hidden", photo ? (tall ? "min-h-[92svh]" : "min-h-[78svh]") : "min-h-[56svh]")}>
+    <section data-hero className={clsx("theme-navy relative isolate flex flex-col justify-end overflow-hidden", photo ? (tall ? "min-h-[92svh]" : "min-h-[78svh]") : "min-h-[56svh]")}>
       {photo && (
         <div className="absolute inset-0 -z-10">
           {morph ? (

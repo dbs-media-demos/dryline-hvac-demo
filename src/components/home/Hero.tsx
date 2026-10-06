@@ -31,7 +31,7 @@ function Letters({ text, accentFrom }: { text: string; accentFrom: number }) {
 export function Hero({ biz = defaultBiz }: { biz?: Biz }) {
   const sr = biz.lang === "sr";
   return (
-    <section className="theme-navy relative isolate flex min-h-[100svh] flex-col overflow-hidden" aria-labelledby="hero-title">
+    <section data-hero className="theme-navy relative isolate flex min-h-[100svh] flex-col overflow-hidden" aria-labelledby="hero-title">
       {/* Photo layers: frost for cooling, flame for heating — crossfaded by --mix. */}
       <div className="absolute inset-0 -z-10">
         <div className="anim-zoom absolute inset-0">

@@ -18,8 +18,9 @@ export function Header() {
   const biz = useBiz();
   const telHref = telOf(biz);
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
+  // "clear" over the hero / page top; past it, a see-through glass bar tinted to the section beneath.
+  const [tone, setTone] = useState<"clear" | "light" | "dark">("clear");
+  const headerRef = useRef<HTMLElement>(null);
   // Menus remember which page they were opened on, so navigating closes them without an effect.
   const [menuAt, setMenuAt] = useState<string | null>(null);
   const [megaAt, setMegaAt] = useState<string | null>(null);
@@ -28,23 +29,36 @@ export function Header() {
   const setMenuOpen = (v: boolean | ((o: boolean) => boolean)) => setMenuAt((typeof v === "function" ? v(menuOpen) : v) ? pathname : null);
   const setMegaOpen = (v: boolean) => setMegaAt(v ? pathname : null);
   const [preview, setPreview] = useState(services[0]);
-  const lastY = useRef(0);
   const closeTimer = useRef(0);
 
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 40);
-      // Only flip on a clear direction change; tiny Lenis deltas (<4px) keep the current state.
-      if (y < 320 || y < lastY.current - 4) setHidden(false);
-      else if (y > lastY.current + 4) setHidden(true);
-      else return;
-      lastY.current = y;
+    let raf = 0;
+    const measure = () => {
+      raf = 0;
+      const h = headerRef.current;
+      if (!h) return;
+      if (window.scrollY <= 40) return setTone("clear");
+      // Whatever page content sits under the middle of the header decides the tint.
+      const r = h.getBoundingClientRect();
+      const under = document.elementsFromPoint(window.innerWidth / 2, r.top + r.height / 2).find((el) => !h.contains(el));
+      if (under?.closest("[data-hero]")) setTone("clear");
+      else setTone(under?.closest(".theme-navy") ? "dark" : "light");
     };
-    onScroll();
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(measure);
+    };
+    measure();
+    // Re-measure once the new page has painted after a navigation.
+    const settle = window.setTimeout(measure, 120);
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(settle);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     document.documentElement.style.overflow = menuOpen ? "hidden" : "";
@@ -60,7 +74,9 @@ export function Header() {
     return () => window.removeEventListener("keydown", onKey);
   }, [menuOpen]);
 
-  const solid = scrolled || megaOpen;
+  // The mega menu is a light panel, so the bar goes light with it; the mobile menu sits on navy.
+  const look = menuOpen ? "clear" : megaOpen ? "light" : tone;
+  const solid = look === "light";
   const openMega = () => {
     window.clearTimeout(closeTimer.current);
     setMegaOpen(true);
@@ -72,16 +88,18 @@ export function Header() {
   return (
     <>
       <header
+        ref={headerRef}
         style={{ viewTransitionName: "site-header", top: "var(--bar-h)" }}
         className={clsx(
-          "fixed inset-x-0 z-50 transition-[transform,background-color,color,box-shadow] duration-500 ease-[var(--ease-out-expo)]",
-          hidden && !menuOpen && !megaOpen ? "-translate-y-[140%]" : "translate-y-0",
-          solid && !menuOpen ? "bg-frost/85 text-navy shadow-[0_1px_0_var(--line)] backdrop-blur-xl" : "bg-transparent text-frost",
+          "fixed inset-x-0 z-50 transition-[background-color,color,box-shadow,backdrop-filter] duration-500 ease-[var(--ease-out-expo)]",
+          look === "light" && "bg-frost/60 text-navy shadow-[0_1px_0_rgb(10_23_38/0.08)] backdrop-blur-lg backdrop-saturate-150",
+          look === "dark" && "bg-navy/40 text-frost shadow-[0_1px_0_rgb(245_249_251/0.1)] backdrop-blur-lg backdrop-saturate-150",
+          look === "clear" && "bg-transparent text-frost",
         )}
       >
         <div className="mx-auto flex h-[var(--header-h)] max-w-[1480px] items-center justify-between gap-6 px-5 md:px-8">
           <Link href="/" className="relative z-10 rounded-lg">
-            <Logo tone={solid && !menuOpen ? "light" : "dark"} />
+            <Logo tone={solid ? "light" : "dark"} />
           </Link>
 
           <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
