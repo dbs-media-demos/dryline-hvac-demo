@@ -35,8 +35,10 @@ export function Header() {
     const onScroll = () => {
       const y = window.scrollY;
       setScrolled(y > 40);
-      setHidden(y > 320 && y > lastY.current + 4);
-      if (y < lastY.current - 4 || y < 320) setHidden(false);
+      // Only flip on a clear direction change; tiny Lenis deltas (<4px) keep the current state.
+      if (y < 320 || y < lastY.current - 4) setHidden(false);
+      else if (y > lastY.current + 4) setHidden(true);
+      else return;
       lastY.current = y;
     };
     onScroll();
