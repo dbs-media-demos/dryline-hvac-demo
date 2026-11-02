@@ -94,6 +94,8 @@ export const sr: Record<string, string> = {
   "Holding back": "Držimo razliku",
   "A year of outside temperatures against the indoor line": "Godina spoljnih temperatura naspram temperature u kući",
   "Forty-degree swing": "Skok od 22°",
+  "Set & holding": "Podešeno i drži",
+  "All over town": "U celom gradu",
 
   // ── Cooling / heating split ──
   "Cooling in summer, heating in winter": "Leti hlađenje, zimi grejanje",

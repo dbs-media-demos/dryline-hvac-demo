@@ -3,6 +3,7 @@ import { Photo } from "@/components/ui/Photo";
 import { Parallax, SplitReveal, Reveal } from "@/components/ui/Reveal";
 import { PhoneIcon } from "@/components/ui/Icons";
 import { OpenBadge } from "@/components/ui/OpenBadge";
+import { FrostMelt } from "@/components/fx/HvacTouches";
 import { img, type Photo as PhotoT } from "@/lib/images";
 import { defaultBiz } from "@/lib/biz";
 import { telOf, type Biz } from "@/lib/biz-core";
@@ -26,6 +27,7 @@ export function CtaBand({
         </div>
       </Parallax>
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-navy via-navy/60 to-navy/30" />
+      <FrostMelt />
       <div className="mx-auto flex min-h-[80svh] max-w-[1480px] flex-col justify-end px-5 py-20 md:px-8 md:py-28">
         <Reveal>
           <OpenBadge className="text-frost/85" />

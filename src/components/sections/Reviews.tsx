@@ -21,7 +21,37 @@ export function Stars({ n, className }: { n: number; className?: string }) {
   );
 }
 
-export function ReviewCard({ r, className }: { r: Review; className?: string }) {
+/** What the house read when the tech arrived → when they left (°F, or relative humidity for air-quality jobs). */
+const readings: Record<string, [number, number, "cool" | "heat" | "rh"]> = {
+  "AC repair": [86, 72, "cool"],
+  "AC installation": [83, 72, "cool"],
+  "Mini-split": [88, 71, "cool"],
+  "Comfort Club tune-up": [78, 72, "cool"],
+  "Smart thermostat": [76, 72, "cool"],
+  "Duct cleaning": [81, 73, "cool"],
+  "Furnace repair": [58, 70, "heat"],
+  "Furnace installation": [61, 70, "heat"],
+  "Heat pump": [63, 71, "heat"],
+  "Indoor air quality": [63, 45, "rh"],
+};
+
+/** Before → after, with air flowing along the arrow. */
+function Reading({ job, lang }: { job: string; lang: "en" | "sr" }) {
+  const r = readings[job];
+  if (!r) return null;
+  const [a, b, kind] = r;
+  const fmt = (v: number) => (kind === "rh" ? `${v}%` : `${lang === "sr" ? Math.round(((v - 32) * 5) / 9) : v}°`);
+  return (
+    <span className="reading shrink-0" data-kind={kind} data-no-translate aria-hidden>
+      <span className="reading-from">{fmt(a)}</span>
+      <span className="reading-flow" />
+      <span className="reading-to">{fmt(b)}</span>
+      {kind === "rh" && <span className="text-muted">{lang === "sr" ? "vlaga" : "RH"}</span>}
+    </span>
+  );
+}
+
+export function ReviewCard({ r, className, lang = "en" }: { r: Review; className?: string; lang?: "en" | "sr" }) {
   return (
     <figure className={clsx("flex h-full flex-col rounded-[22px] bg-white p-6 ring-1 ring-line", className)}>
       <div className="flex items-center justify-between gap-3">
@@ -40,7 +70,10 @@ export function ReviewCard({ r, className }: { r: Review; className?: string }) 
       </div>
       <Stars n={r.rating} className="mt-4" />
       <blockquote className="mt-3 text-[0.98rem] leading-relaxed text-navy/85">&ldquo;{r.text}&rdquo;</blockquote>
-      <p className="mt-auto pt-4 font-mono text-[0.66rem] tracking-[0.12em] text-muted uppercase">{r.job}</p>
+      <div className="mt-auto flex items-end justify-between gap-3 pt-4 font-mono text-[0.66rem] tracking-[0.12em] text-muted uppercase">
+        <p>{r.job}</p>
+        <Reading job={r.job} lang={lang} />
+      </div>
     </figure>
   );
 }
@@ -77,16 +110,17 @@ export function RatingSummary({ className, biz = defaultBiz }: { className?: str
 export function ReviewsMarquee({ biz = defaultBiz }: { biz?: Biz }) {
   const list = biz.preview ? reviews.map((r) => ({ ...r, text: scrub(r.text, biz), area: biz.area })) : reviews;
   const half = Math.ceil(list.length / 2);
+  const lang = biz.lang === "sr" ? "sr" : "en";
   return (
     <div className="grid gap-5">
       <Marquee duration={70} pausable>
         {list.slice(0, half).map((r) => (
-          <ReviewCard key={r.name} r={r} className="mr-5 w-[320px] sm:w-[380px]" />
+          <ReviewCard key={r.name} r={r} lang={lang} className="mr-5 w-[320px] sm:w-[380px]" />
         ))}
       </Marquee>
       <Marquee duration={80} reverse pausable>
         {list.slice(half).map((r) => (
-          <ReviewCard key={r.name} r={r} className="mr-5 w-[320px] sm:w-[380px]" />
+          <ReviewCard key={r.name} r={r} lang={lang} className="mr-5 w-[320px] sm:w-[380px]" />
         ))}
       </Marquee>
     </div>

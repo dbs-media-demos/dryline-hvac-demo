@@ -2,6 +2,7 @@ import { SectionHead } from "@/components/ui/SectionHead";
 import { Reveal } from "@/components/ui/Reveal";
 import { OpenBadge } from "@/components/ui/OpenBadge";
 import { ArrowIcon } from "@/components/ui/Icons";
+import { SettleDial } from "@/components/fx/HvacTouches";
 import { DAY_NAMES, L, dayRange, weekFromMonday, type Biz } from "@/lib/biz-core";
 
 /** A preview's service-area block: the business's real address on a Google map, hours and directions. */
@@ -39,6 +40,7 @@ export function PreviewMap({ biz }: { biz: Biz }) {
         <Reveal>
           <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] ring-1 ring-line">
             <iframe src={embed} title={L(biz, `Map: ${query}`, `Mapa: ${query}`)} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="absolute inset-0 h-full w-full border-0" />
+            <SettleDial lang={biz.lang === "sr" ? "sr" : "en"} className="absolute bottom-3 left-3 origin-bottom-left max-sm:scale-[0.85] sm:bottom-6 sm:left-6" />
           </div>
         </Reveal>
       </div>

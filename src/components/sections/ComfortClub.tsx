@@ -6,6 +6,7 @@ import clsx from "clsx";
 import { plans } from "@/content/plans";
 import { CheckIcon } from "@/components/ui/Icons";
 import { Reveal } from "@/components/ui/Reveal";
+import { FilterSwap } from "@/components/fx/HvacTouches";
 
 /**
  * A price whose digits roll like an odometer when it changes. Each slot is sized by an invisible
@@ -73,6 +74,12 @@ export function ComfortClub() {
 
   return (
     <div>
+      {/* Every plan sends filters: this one gets swapped as it comes into view */}
+      <FilterSwap className="mb-8 justify-center">
+        <span className="font-mono text-[0.68rem] tracking-[0.12em] text-muted uppercase">
+          Fresh filters, <span className="text-accent-auto">delivered</span>
+        </span>
+      </FilterSwap>
       <div className="flex justify-center">
         <div role="radiogroup" aria-label="Billing period" className="relative inline-grid grid-cols-2 rounded-full bg-white p-1.5 ring-1 ring-line">
           <span

@@ -1,6 +1,7 @@
 import { Counter } from "@/components/ui/Counter";
 import { Reveal } from "@/components/ui/Reveal";
 import { Marquee } from "@/components/ui/Marquee";
+import { FanBlades, FanSpinner } from "@/components/fx/HvacTouches";
 import { site } from "@/lib/site";
 import { defaultBiz } from "@/lib/biz";
 import { L, openDays, type Biz } from "@/lib/biz-core";
@@ -39,14 +40,17 @@ export function Stats({ biz = defaultBiz }: { biz?: Biz }) {
   const stats = biz.preview ? previewStats(biz) : conceptStats;
   return (
     <section className="py-20 md:py-28" aria-label={biz.preview ? biz.name : "Dryline by the numbers"}>
+      {/* The separators are little fans that spin up as you scroll */}
+      <FanSpinner>
       <Marquee duration={45} className="border-y border-line py-5">
         {promises.map((p) => (
           <span key={p} className="flex items-center gap-8 pr-8 font-display text-[clamp(1.4rem,2.6vw,2.2rem)] tracking-[-0.04em] whitespace-nowrap">
             {p}
-            <span className="h-2.5 w-2.5 rounded-full bg-accent" aria-hidden />
+            <FanBlades className="spin-fan h-[0.95em] w-[0.95em] text-accent-auto" />
           </span>
         ))}
       </Marquee>
+      </FanSpinner>
       <Reveal className="mx-auto mt-16 grid max-w-[1480px] gap-10 px-5 sm:grid-cols-2 md:px-8 lg:grid-cols-4" stagger={0.1}>
         {stats.map((s) => (
           <div key={s.label} className="border-t border-navy pt-6">

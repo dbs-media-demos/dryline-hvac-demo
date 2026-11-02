@@ -5,6 +5,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { gsap } from "@/lib/gsap";
 import { ArrowIcon } from "@/components/ui/Icons";
+import { Condenser } from "@/components/fx/HvacTouches";
 
 /*
  * Repair or replace? Four honest inputs → an animated gauge and an estimated yearly saving.
@@ -173,7 +174,11 @@ export function RepairReplace() {
 
       <div className="theme-navy relative flex flex-col justify-between gap-8 p-6 sm:p-10" aria-live="polite">
         <div>
-          <p className="eyebrow text-frost/60">Our honest read</p>
+          <div className="flex items-start justify-between gap-4">
+            <p className="eyebrow text-frost/60">Our honest read</p>
+            {/* Your outdoor unit: the older the system, the slower and shakier it runs */}
+            <Condenser age={age} tired={result.verdict === "replace"} className="h-12 w-12 shrink-0 sm:h-14 sm:w-14" />
+          </div>
           <svg viewBox="0 -14 320 204" className="mt-4 w-full max-w-[420px]" role="img" aria-label={`Gauge: ${v.title}`}>
             <defs>
               <linearGradient id="gauge-grad" x1="0" x2="1">

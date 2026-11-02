@@ -20,6 +20,7 @@ import { defaultBiz } from "@/lib/biz";
 import { L, type Biz } from "@/lib/biz-core";
 import { scrub } from "@/lib/scrub";
 import { PreviewMap } from "@/components/preview/PreviewMap";
+import { SettleDial, Vent } from "@/components/fx/HvacTouches";
 import { faqs } from "@/content/faqs";
 
 export const homeFaqs = faqs.filter((_, i) => [0, 2, 3, 5, 6, 9].includes(i));
@@ -44,7 +45,8 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
             <SectionHead eyebrow="Services" title={<span id="services-title">Everything between the thermostat and the sky.</span>}>
               Repairs, replacements and the upgrades that make a house feel different — all at flat prices you see before we start.
             </SectionHead>
-            <Reveal>
+            <Reveal className="flex flex-col items-start gap-8 lg:items-end">
+              <Vent className="w-[136px] md:w-[160px]" />
               <Link href="/services" className="btn btn-navy">
                 All services <ArrowIcon width={18} height={18} />
               </Link>
@@ -100,8 +102,9 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
               <ServiceAreaList />
             </Reveal>
           </div>
-          <Reveal>
+          <Reveal className="relative">
             <ServiceMap />
+            <SettleDial className="absolute bottom-3 left-3 origin-bottom-left max-sm:scale-[0.85] sm:bottom-6 sm:left-6" />
           </Reveal>
         </div>
       </section>

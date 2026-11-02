@@ -999,3 +999,175 @@ a:focus-visible .map-town circle:first-child {
   opacity: 1;
   scale: 1;
 }
+
+/* ───────────────────────── HVAC touches (one per section) ───────────────────────── */
+
+/* Services: a supply register — louvers open, then air streams out */
+.vent-slat {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.9s var(--ease-out-expo);
+  transition-delay: calc(0.15s + var(--i) * 0.07s);
+}
+.vent[data-in="true"] .vent-slat {
+  transform: scaleY(0.35) skewX(-18deg);
+}
+.vent-air {
+  opacity: 0;
+  transition: opacity 0.8s ease 0.6s;
+  animation: vent-air 1.8s linear infinite;
+  animation-delay: calc(var(--i) * -0.45s);
+}
+.vent[data-in="true"] .vent-air {
+  opacity: 0.75;
+}
+@keyframes vent-air {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+/* Day on call: the outdoor thermometer on the timeline */
+.day-thermo {
+  --thermo: color-mix(in oklch longer hue, var(--heat) calc(var(--fill, 0.5) * 100%), var(--cool));
+}
+.day-thermo-fill {
+  fill: var(--thermo);
+  transform-box: fill-box;
+  transform-origin: bottom;
+  transform: scaleY(var(--fill, 0.5));
+}
+.day-thermo-bulb {
+  fill: var(--thermo);
+}
+
+/* Repair or replace: the condenser runs rough once it's time to replace */
+.condenser.is-tired {
+  animation: condenser-rattle 0.32s steps(2) infinite;
+}
+@keyframes condenser-rattle {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(0.6px, -0.4px);
+  }
+  100% {
+    transform: translate(-0.5px, 0.3px);
+  }
+}
+
+/* Comfort Club: dusty filter → clean, with a glint */
+.filter-dust {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 1.4s var(--ease-in-out-quart) 0.3s;
+}
+.filter-swap[data-in="true"] .filter-dust {
+  clip-path: inset(0 0 0 100%);
+}
+.filter-glint {
+  opacity: 0;
+}
+.filter-swap[data-in="true"] .filter-glint {
+  animation: filter-glint 1.4s var(--ease-in-out-quart) 0.3s;
+}
+@keyframes filter-glint {
+  from {
+    opacity: 0.85;
+    transform: translateX(0) rotate(18deg);
+  }
+  to {
+    opacity: 0.85;
+    transform: translateX(170px) rotate(18deg);
+  }
+}
+
+/* Reviews: indoor reading on arrival → when the tech left, air flowing between */
+.reading {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.reading-flow {
+  width: 22px;
+  height: 2px;
+  background: repeating-linear-gradient(to right, currentColor 0 3px, transparent 3px 6px);
+  background-size: 12px 2px;
+  animation: reading-flow 0.9s linear infinite;
+  opacity: 0.6;
+}
+@keyframes reading-flow {
+  to {
+    background-position: 12px 0;
+  }
+}
+.reading[data-kind="cool"] .reading-from,
+.reading[data-kind="heat"] .reading-to {
+  color: var(--heat-ink);
+}
+.reading[data-kind="cool"] .reading-to,
+.reading[data-kind="heat"] .reading-from,
+.reading[data-kind="rh"] .reading-to {
+  color: var(--cool-ink);
+}
+.reading[data-kind="rh"] .reading-from {
+  color: var(--slate);
+}
+
+/* FAQ: louvers open when the answer does, and a puff of air comes out */
+.faq-slat {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.6s var(--ease-out-expo);
+  transition-delay: calc(var(--i) * 0.05s);
+}
+.faq[open] .faq-slat {
+  transform: rotate(-32deg) scaleX(0.92);
+}
+.faq-puff {
+  opacity: 0;
+}
+.faq[open] .faq-puff {
+  animation: faq-puff 0.9s var(--ease-out-expo) calc(0.1s + var(--i) * 0.06s) both;
+}
+@keyframes faq-puff {
+  0% {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  35% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+}
+
+/* CTA: frost on the glass that melts as the section scrolls in */
+.frost {
+  /* Fern-like ice veins (SVG turbulence) plus a cold haze, kept to the edges of the glass */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' preserveAspectRatio='none'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.012 0.016' numOctaves='5' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 -2.2 1.05'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at center, rgb(220 240 248 / 0) 30%, rgb(220 240 248 / 0.3) 100%);
+  background-size: cover, auto;
+  background-repeat: no-repeat;
+  -webkit-mask-image: radial-gradient(ellipse 80% 75% at center, transparent 45%, black 100%);
+  mask-image: radial-gradient(ellipse 80% 75% at center, transparent 45%, black 100%);
+}
+@media (min-width: 768px) {
+  .frost {
+    backdrop-filter: blur(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .frost {
+    display: none;
+  }
+  .vent-air,
+  .reading-flow {
+    animation: none;
+  }
+}
