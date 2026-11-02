@@ -7,11 +7,15 @@ import { plans } from "@/content/plans";
 import { CheckIcon } from "@/components/ui/Icons";
 import { Reveal } from "@/components/ui/Reveal";
 
-/** A price whose digits roll like an odometer when it changes. */
+/**
+ * A price whose digits roll like an odometer when it changes. Each slot is sized by an invisible
+ * "0" in the same (tabular) font, so it is exactly one digit wide at any font size; only the
+ * vertical overflow is clipped, so glyphs never lose their edges.
+ */
 function Odometer({ value }: { value: string }) {
   const chars = value.split("");
   return (
-    <span className="relative inline-flex overflow-hidden tabular" aria-hidden>
+    <span className="relative inline-flex tabular leading-[1.15]" aria-hidden>
       {chars.map((c, i) => {
         const key = chars.length - i; // key from the right so digits keep their slot
         if (!/\d/.test(c)) {
@@ -23,13 +27,14 @@ function Odometer({ value }: { value: string }) {
         }
         const d = Number(c);
         return (
-          <span key={`d${key}`} className="relative inline-block h-[1em] w-[0.62em] overflow-hidden leading-none">
+          <span key={`d${key}`} className="relative inline-block h-[1.15em] overflow-x-visible overflow-y-clip">
+            <span className="invisible">0</span>
             <span
               className="absolute inset-x-0 top-0 flex flex-col transition-transform duration-[1.1s] ease-[var(--ease-out-expo)]"
               style={{ transform: `translateY(${-d * 10}%)`, transitionDelay: `${i * 45}ms` }}
             >
               {Array.from({ length: 10 }, (_, n) => (
-                <span key={n} className="block h-[1em] text-center">
+                <span key={n} className="block h-[1.15em] text-center">
                   {n}
                 </span>
               ))}
@@ -101,7 +106,7 @@ export function ComfortClub() {
             <TiltCard key={p.id} className="h-full">
               <article
                 className={clsx(
-                  "relative flex h-full flex-col overflow-hidden rounded-[28px] p-7 sm:p-9",
+                  "@container relative flex h-full flex-col overflow-hidden rounded-[28px] p-7 sm:p-9",
                   p.featured ? "theme-navy shadow-[0_40px_80px_-30px_rgb(10_23_38/0.6)]" : "bg-white ring-1 ring-line",
                 )}
                 aria-labelledby={`plan-${p.id}`}
@@ -119,9 +124,10 @@ export function ComfortClub() {
                 </div>
                 <p className={clsx("relative mt-2 min-h-[3rem] text-[0.95rem]", p.featured ? "text-frost/70" : "text-muted")}>{p.blurb}</p>
 
-                <p className="relative mt-6 flex items-end gap-2">
-                  <span className="font-display text-[3.4rem] leading-none tracking-[-0.06em]">
-                    <span className="mr-0.5 align-top text-[1.6rem]">$</span>
+                <p className="relative mt-6 flex flex-wrap items-end gap-x-2 gap-y-1">
+                  {/* Sized by the card (cqi), so "$34.95" fits the narrow three-column layout too */}
+                  <span className="flex items-start font-display text-[min(3.4rem,20cqi)] leading-none tracking-[-0.06em] whitespace-nowrap">
+                    <span className="mt-[0.12em] mr-0.5 text-[0.47em]">$</span>
                     <Odometer value={price} />
                     <span className="sr-only">{`$${price}`}</span>
                   </span>

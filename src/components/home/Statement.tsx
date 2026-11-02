@@ -1,6 +1,6 @@
-import { Photo } from "@/components/ui/Photo";
-import { Parallax, Reveal, ScrubWords } from "@/components/ui/Reveal";
-import { img } from "@/lib/images";
+import { Reveal, ScrubWords } from "@/components/ui/Reveal";
+import { ComfortLine } from "@/components/home/ComfortLine";
+import { Promises } from "@/components/home/Promises";
 import { defaultBiz } from "@/lib/biz";
 import type { Biz } from "@/lib/biz-core";
 
@@ -15,9 +15,9 @@ export function Statement({ biz = defaultBiz }: { biz?: Biz }) {
   const text = !biz.preview ? statement.concept : biz.lang === "sr" ? statement.sr : statement.en;
   const accent = !biz.preview ? ["104°", "9°", "line"] : biz.lang === "sr" ? ["40°.", "deset.", "strani,"] : ["summers.", "winters.", "line,"];
   return (
-    <section className="relative overflow-hidden py-24 md:py-36" aria-labelledby="statement-title">
-      <div className="mx-auto grid max-w-[1480px] gap-16 px-5 md:px-8 lg:grid-cols-12 lg:gap-10">
-        <div className="lg:col-span-7">
+    <section className="mix-scope relative py-24 md:py-36" aria-labelledby="statement-title">
+      <div className="mx-auto grid max-w-[1480px] gap-14 px-5 md:px-8 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-0">
+        <div>
           <Reveal>
             <h2 id="statement-title" className="eyebrow text-accent-auto flex items-center gap-3">
               <span className="h-px w-8 bg-current" aria-hidden />
@@ -25,36 +25,18 @@ export function Statement({ biz = defaultBiz }: { biz?: Biz }) {
             </h2>
           </Reveal>
           <ScrubWords
-            className="mt-8 font-display text-[clamp(1.75rem,3.6vw,3.35rem)] leading-[1.08] tracking-[-0.045em]"
+            className="mt-8 font-display text-[clamp(1.75rem,3.4vw,3.2rem)] leading-[1.08] tracking-[-0.045em]"
             text={text}
             accent={accent}
           />
-          <Reveal className="mt-12 grid max-w-[40rem] gap-8 sm:grid-cols-2" stagger={0.1}>
-            <div className="border-t border-line pt-5">
-              <p className="font-display text-lg tracking-[-0.03em]">Flat-rate, in writing</p>
-              <p className="mt-2 text-muted">You approve the price before we start. It doesn&rsquo;t change at midnight, on Sundays or on the Fourth of July.</p>
-            </div>
-            <div className="border-t border-line pt-5">
-              <p className="font-display text-lg tracking-[-0.03em]">Fixed right, or it&rsquo;s free</p>
-              <p className="mt-2 text-muted">100% satisfaction guarantee and a 1-year warranty on every repair. Ten years on every install.</p>
-            </div>
-          </Reveal>
         </div>
 
-        <div className="relative h-[520px] sm:h-[620px] lg:col-span-5 lg:h-auto">
-          <Parallax className="absolute top-0 right-0 h-[72%] w-[70%] rounded-[28px]" amount={14}>
-            <div className="absolute inset-0">
-              <Photo photo={img.summerSun} sizes="(min-width: 1024px) 28vw, 70vw" />
-            </div>
-          </Parallax>
-          <span className="absolute top-5 right-5 z-10 rounded-full bg-navy/70 px-3 py-1.5 font-mono text-[0.7rem] tracking-wide text-frost backdrop-blur">JUL · 104°F</span>
-          <Parallax className="absolute bottom-0 left-0 h-[52%] w-[62%] rounded-[28px] ring-8 ring-frost" amount={18}>
-            <div className="absolute inset-0">
-              <Photo photo={img.winterHouseNight} sizes="(min-width: 1024px) 24vw, 62vw" />
-            </div>
-          </Parallax>
-          <span className="absolute bottom-5 left-5 z-10 rounded-full bg-navy/70 px-3 py-1.5 font-mono text-[0.7rem] tracking-wide text-frost backdrop-blur">JAN · 9°F</span>
-        </div>
+        {/* Phones: the chart right after the statement; desktop: a sticky column beside it */}
+        <Reveal className="lg:sticky lg:top-[calc(var(--bar-h)+var(--header-h)+24px)] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-[min(700px,calc(100svh-var(--bar-h)-var(--header-h)-48px))] lg:self-start">
+          <ComfortLine lang={biz.lang === "sr" ? "sr" : "en"} />
+        </Reveal>
+
+        <Promises />
       </div>
     </section>
   );
