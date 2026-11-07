@@ -3,12 +3,13 @@
 import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { accentRgb, getTemp, mixFor, subscribeTemp } from "@/lib/mode";
+import { PHONE_QUERY } from "@/lib/phone";
 
 /*
  * Airflow: a field of streaks drifting through the hero.
  * Cooling → air sinks and spills sideways, like cold air off a supply register.
  * Heating → air rises in lazy convection plumes. Everything in between blends.
- * Starts on idle, runs at 30fps on touch devices, pauses off-screen, skips reduced motion.
+ * Starts on idle, runs at 30fps on touch devices, pauses off-screen, skips phones and reduced motion.
  */
 
 type P = { x: number; y: number; px: number; py: number; life: number; max: number; s: number };
@@ -149,7 +150,7 @@ export function Airflow({ className }: { className?: string }) {
   }
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || window.matchMedia(PHONE_QUERY).matches) return;
     let stop: (() => void) | undefined;
     let cancelled = false;
     const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 400));

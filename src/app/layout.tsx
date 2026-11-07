@@ -1,14 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Unbounded, Figtree, Martian_Mono } from "next/font/google";
+import { Martian_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { Cursor } from "@/components/fx/Cursor";
 import { modeBootScript } from "@/lib/mode";
 import { site, siteUrl, noindex, agencyName, agencyUrl } from "@/lib/site";
 
-const unbounded = Unbounded({ subsets: ["latin", "latin-ext"], variable: "--font-unbounded", weight: ["400", "500", "600"], display: "swap" });
-const figtree = Figtree({ subsets: ["latin", "latin-ext"], variable: "--font-figtree", display: "swap" });
-const martian = Martian_Mono({ subsets: ["latin", "latin-ext"], variable: "--font-martian", weight: ["400", "500"], display: "swap" });
+// Subset to Latin + Latin Ext-A (Serbian included) and the weights in use: two files, under 100 KB together.
+const unbounded = localFont({ src: "./fonts/unbounded-latin-var.woff2", variable: "--font-unbounded", weight: "400 600", display: "swap" });
+const figtree = localFont({ src: "./fonts/figtree-latin-var.woff2", variable: "--font-figtree", weight: "400 700", display: "swap" });
+// Desktop only: phones set their mono labels in Figtree (globals.css) and never fetch this one.
+const martian = Martian_Mono({ subsets: ["latin", "latin-ext"], variable: "--font-martian", weight: ["400", "500"], display: "swap", preload: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

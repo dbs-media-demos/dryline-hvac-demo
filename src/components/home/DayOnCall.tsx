@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Photo } from "@/components/ui/Photo";
 import { dayOnCall } from "@/content/company";
-import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { useMotion } from "@/lib/motion";
 import { SplitReveal, Reveal } from "@/components/ui/Reveal";
 import { useBiz } from "@/components/preview/BizContext";
 
@@ -13,7 +13,7 @@ const TEMPS = [81, 88, 97, 104, 99, 86];
 /*
  * "A day on call": a pinned horizontal photo story from 7:02 a.m. to 11:48 p.m.
  * Desktop scrubs sideways with scroll (images counter-drift for depth); phones get a
- * native swipe rail with scroll snap. Under the photos an outdoor thermometer rides the
+ * native swipe rail with scroll snap, the next photo half showing. Under the photos an outdoor thermometer rides the
  * timeline and climbs with the July heat as the day goes on.
  */
 export function DayOnCall() {
@@ -39,8 +39,20 @@ export function DayOnCall() {
     if (reading.current) reading.current.textContent = fmt(t);
   };
 
-  useGSAP(
-    () => {
+  // Phones and tablets swipe the rail instead: the thermometer follows the swipe
+  useEffect(() => {
+    const t = track.current!;
+    const mq = window.matchMedia("(max-width: 1023.98px)");
+    const onScroll = () => {
+      if (mq.matches) setDay(t.scrollLeft / Math.max(1, t.scrollWidth - t.clientWidth));
+    };
+    t.addEventListener("scroll", onScroll, { passive: true });
+    return () => t.removeEventListener("scroll", onScroll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useMotion(
+    ({ gsap, ScrollTrigger }) => {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
         const t = track.current!;
@@ -67,36 +79,29 @@ export function DayOnCall() {
         });
         return () => ScrollTrigger.getAll().forEach((s) => s.vars.containerAnimation === tween && s.kill());
       });
-      // Phones and tablets swipe the rail instead: the thermometer follows the swipe
-      mm.add("(max-width: 1023.98px)", () => {
-        const t = track.current!;
-        const onScroll = () => setDay(t.scrollLeft / Math.max(1, t.scrollWidth - t.clientWidth));
-        t.addEventListener("scroll", onScroll, { passive: true });
-        return () => t.removeEventListener("scroll", onScroll);
-      });
     },
     { scope: root },
   );
 
   return (
-    <section ref={root} className="theme-navy relative overflow-hidden py-20 lg:flex lg:h-[100svh] lg:flex-col lg:justify-center lg:py-0" aria-labelledby="day-title">
-      <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-5 md:px-8 lg:flex-row lg:items-end lg:justify-between lg:pt-[calc(var(--bar-h)+var(--header-h))]">
+    <section ref={root} className="theme-navy relative overflow-hidden py-20 phone:pt-7 phone:pb-9 lg:flex lg:h-[100svh] lg:flex-col lg:justify-center lg:py-0" aria-labelledby="day-title">
+      <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-6 px-5 phone:gap-3 md:px-8 lg:flex-row lg:items-end lg:justify-between lg:pt-[calc(var(--bar-h)+var(--header-h))]">
         <div>
           <Reveal>
             <p className="eyebrow text-accent-auto flex items-center gap-3">
               <span className="h-px w-8 bg-current" aria-hidden /> A day on call
             </p>
           </Reveal>
-          <SplitReveal id="day-title" className="display-lg mt-5 max-w-[14ch]">
+          <SplitReveal id="day-title" className="display-lg mt-5 max-w-[14ch] phone:mt-3 phone:max-w-none">
             7:02 a.m. to 11:48 p.m.
           </SplitReveal>
         </div>
-        <Reveal className="max-w-[26rem] text-frost/70">
+        <Reveal className="max-w-[26rem] text-frost/70 phone:text-[0.92rem] phone:leading-[1.4]">
           Twenty-one trucks, six cities, one flat rate. Here&rsquo;s a real Tuesday in July — the kind our dispatchers call &ldquo;normal.&rdquo;
         </Reveal>
       </div>
 
-      <div className="mx-auto mt-10 w-full max-w-[1480px] px-5 md:px-8 lg:mt-8" aria-hidden>
+      <div className="mx-auto mt-10 w-full max-w-[1480px] px-5 phone:mt-4 md:px-8 lg:mt-8" aria-hidden>
         <div className="relative h-8">
           <div className="absolute inset-x-0 top-1/2 h-px bg-white/15">
             <div ref={bar} className="h-px origin-left scale-x-0 bg-accent" />
@@ -114,25 +119,25 @@ export function DayOnCall() {
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 phone:mt-4">
         <div
           ref={track}
-          className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 md:px-8 lg:w-max lg:snap-none lg:gap-6 lg:overflow-visible lg:pr-[20vw]"
+          className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 phone:gap-3 phone:scroll-pl-5 md:px-8 lg:w-max lg:snap-none lg:gap-6 lg:overflow-visible lg:pr-[20vw]"
         >
           {dayOnCall.map((c, i) => (
-            <article key={c.time} className="w-[82vw] shrink-0 snap-start sm:w-[420px] lg:w-[min(34vw,520px)]">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[22px] lg:aspect-[5/4]">
+            <article key={c.time} className="w-[82vw] shrink-0 snap-start phone:w-[62vw] sm:w-[420px] phone:sm:w-[300px] lg:w-[min(34vw,520px)]">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[22px] phone:aspect-[5/4] phone:rounded-[18px] lg:aspect-[5/4]">
                 <div data-drift className="absolute inset-[-6%]">
-                  <Photo photo={c.photo} sizes="(min-width: 1024px) 34vw, 82vw" quality={60} />
+                  <Photo photo={c.photo} sizes="(min-width: 1024px) 34vw, (min-width: 640px) 420px, 62vw" quality={60} />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-transparent to-transparent" />
-                <p className="absolute top-4 left-4 rounded-full bg-navy/70 px-3 py-1.5 font-mono text-[0.72rem] tracking-wide backdrop-blur">
+                <p className="absolute top-4 left-4 rounded-full bg-navy/70 px-3 py-1.5 font-mono text-[0.72rem] tracking-wide backdrop-blur phone:top-2.5 phone:left-2.5 phone:bg-navy/85 phone:px-2.5 phone:py-1 phone:text-[0.68rem] phone:backdrop-blur-none">
                   {c.time} · {c.place}
                 </p>
                 <p className="absolute right-4 bottom-4 font-mono text-[0.68rem] text-frost/70">{String(i + 1).padStart(2, "0")} / 06</p>
               </div>
-              <h3 className="mt-5 font-display text-[1.35rem] tracking-[-0.035em]">{c.title}</h3>
-              <p className="mt-2 max-w-[30rem] text-frost/70">{c.body}</p>
+              <h3 className="mt-5 font-display text-[1.35rem] tracking-[-0.035em] phone:mt-2.5 phone:text-[0.98rem] phone:leading-[1.15]">{c.title}</h3>
+              <p className="mt-2 max-w-[30rem] text-frost/70 phone:mt-1 phone:text-[0.86rem] phone:leading-[1.32]">{c.body}</p>
             </article>
           ))}
         </div>

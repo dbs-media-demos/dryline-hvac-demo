@@ -4,14 +4,14 @@ import Link from "next/link";
 import { useRef } from "react";
 import { Photo } from "@/components/ui/Photo";
 import { ArrowIcon, FlameIcon, SnowIcon } from "@/components/ui/Icons";
-import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { useMotion } from "@/lib/motion";
 import { img } from "@/lib/images";
 
 /*
  * "The line moves": a pinned scene where a weather front — the dryline — sweeps across
  * the screen as you scroll, turning a July afternoon into a January night. The section
  * carries its own --mix, so buttons and accents inside it shift from cool to heat as the
- * front passes, independent of the visitor's thermostat.
+ * front passes, independent of the visitor's thermostat. On phones: the two seasons, stacked.
  */
 
 const STEPS = 28;
@@ -45,8 +45,8 @@ export function DrylineSplit() {
   const line = useRef<SVGPathElement>(null);
   const glow = useRef<SVGPathElement>(null);
 
-  useGSAP(
-    () => {
+  useMotion(
+    ({ gsap, ScrollTrigger }) => {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
         const apply = (p: number) => {
@@ -84,13 +84,13 @@ export function DrylineSplit() {
   );
 
   return (
-    <section ref={root} className="theme-navy mix-scope group/split relative isolate overflow-hidden md:h-[100svh]" aria-labelledby="split-title" data-side="cool">
+    <section ref={root} className="theme-navy mix-scope group/split relative isolate overflow-hidden not-phone:h-[100svh]" aria-labelledby="split-title" data-side="cool">
       <h2 id="split-title" className="sr-only">
         Cooling in summer, heating in winter
       </h2>
 
       {/* Summer (cooling) — full frame */}
-      <div className="relative h-[80svh] md:absolute md:inset-0 md:h-auto">
+      <div className="relative h-[80svh] phone:h-auto not-phone:absolute not-phone:inset-0 not-phone:h-auto">
         <Photo photo={img.stormRoadFire} sizes="100vw" quality={60} />
         <div className="absolute inset-0 bg-gradient-to-r from-navy/85 via-navy/40 to-navy/10" />
         <Panel
@@ -110,7 +110,7 @@ export function DrylineSplit() {
       </div>
 
       {/* Winter (heating) — revealed behind the moving front */}
-      <div ref={winter} className="relative h-[80svh] md:absolute md:inset-0 md:h-auto md:[clip-path:polygon(120%_0,120%_100%,120%_100%,120%_0)]">
+      <div ref={winter} className="relative h-[80svh] phone:h-auto not-phone:absolute not-phone:inset-0 not-phone:h-auto not-phone:[clip-path:polygon(120%_0,120%_100%,120%_100%,120%_0)]">
         <Photo photo={img.winterHouseNight} sizes="100vw" quality={60} />
         <div className="absolute inset-0 bg-gradient-to-l from-navy/85 via-navy/40 to-navy/10" />
         <Panel
@@ -131,12 +131,12 @@ export function DrylineSplit() {
       </div>
 
       {/* The front itself */}
-      <svg className="pointer-events-none absolute inset-0 hidden h-full w-full md:block" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+      <svg className="pointer-events-none absolute inset-0 hidden h-full w-full not-phone:block" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
         <path ref={glow} d={pathFor(0)} fill="none" stroke="var(--accent)" strokeWidth={14} opacity={0.18} vectorEffect="non-scaling-stroke" style={{ filter: "blur(6px)" }} />
         <path ref={line} d={pathFor(0)} fill="none" stroke="var(--accent)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
       </svg>
 
-      <p className="pointer-events-none absolute top-[calc(var(--bar-h)+var(--header-h)+12px)] left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-full bg-navy/60 px-4 py-2 font-mono text-[0.68rem] tracking-[0.16em] text-frost/85 uppercase backdrop-blur md:flex">
+      <p className="pointer-events-none absolute top-[calc(var(--bar-h)+var(--header-h)+12px)] left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-full bg-navy/60 px-4 py-2 font-mono text-[0.68rem] tracking-[0.16em] text-frost/85 uppercase backdrop-blur not-phone:flex">
         <span className="h-1.5 w-1.5 rounded-full bg-accent" /> The dryline is moving — keep scrolling
       </p>
     </section>
@@ -162,13 +162,13 @@ function Panel({
 }) {
   const Icon = side === "cool" ? SnowIcon : FlameIcon;
   return (
-    <div className={`absolute inset-0 flex items-end px-5 pb-12 md:items-center md:px-12 md:pb-0 lg:px-20 ${right ? "md:justify-end" : ""}`}>
+    <div className={`absolute inset-0 flex items-end px-5 pb-12 phone:relative phone:inset-auto phone:min-h-[250px] phone:pt-8 phone:pb-5 not-phone:items-center not-phone:px-12 not-phone:pb-0 not-phone:lg:px-20 ${right ? "not-phone:justify-end" : ""}`}>
       <div className="max-w-[30rem]">
         <p className={`eyebrow flex items-center gap-2 ${side === "cool" ? "text-cool" : "text-heat"}`}>
           <Icon width={16} height={16} /> {kicker}
         </p>
-        <p className="display-md mt-5">{title}</p>
-        <ul className="mt-7 grid grid-cols-2 gap-x-6 gap-y-2 text-[0.98rem] text-frost/85">
+        <p className="display-md mt-5 phone:mt-2">{title}</p>
+        <ul className="mt-7 grid grid-cols-2 gap-x-6 gap-y-2 text-[0.98rem] text-frost/85 phone:mt-3 phone:gap-x-3 phone:gap-y-1 phone:text-[0.86rem]">
           {items.map((i) => (
             <li key={i} className="flex items-center gap-2">
               <span className={`h-1 w-1 rounded-full ${side === "cool" ? "bg-cool" : "bg-heat"}`} />
@@ -176,7 +176,7 @@ function Panel({
             </li>
           ))}
         </ul>
-        <Link href={href} className="mix-scope btn btn-accent on-dark mt-8" style={{ ["--mix" as string]: side === "cool" ? 0 : 1 }}>
+        <Link href={href} className="mix-scope btn btn-accent on-dark mt-8 phone:mt-4 phone:min-h-[44px]" style={{ ["--mix" as string]: side === "cool" ? 0 : 1 }}>
           {cta} <ArrowIcon width={18} height={18} />
         </Link>
       </div>

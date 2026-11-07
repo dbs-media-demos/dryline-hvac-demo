@@ -7,6 +7,8 @@
  */
 export const sr: Record<string, string> = {
   // ── Bars, header, menus ──
+  "Technician inspecting a residential AC condenser beside a white-sided home": "Serviser pregleda spoljnu jedinicu klime pored bele kuće",
+  "Technician installing a new high-efficiency heating system": "Serviser ugrađuje novi visokoefikasni sistem grejanja",
   "Skip to content": "Preskoči na sadržaj",
   "No cool? No heat?": "Ne hladi? Ne greje?",
   "We’re on call 24/7 — same flat rate at 3 a.m.": "Dežuramo 24/7 — ista cena i u 3 ujutru.",
@@ -56,7 +58,7 @@ export const sr: Record<string, string> = {
   "FAN · AUTO": "VENTILATOR · AUTO",
   Cool: "Hladi",
   Heat: "Greje",
-  "Drag · scroll · or use arrow keys": "Prevucite · skrolujte · ili koristite strelice",
+  "Drag · or use arrow keys": "Prevucite · ili koristite strelice",
   Pricing: "Cene",
   "Flat-rate · no overtime": "Fiksne cene · bez doplata",
 

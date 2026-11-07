@@ -2,12 +2,13 @@
 
 import { useRef, type CSSProperties, type ElementType, type ReactNode } from "react";
 import clsx from "clsx";
-import { gsap, ScrollTrigger, SplitText, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+import { useMotion, prefersReducedMotion } from "@/lib/motion";
 
 /*
  * Scroll reveals. Content is always visible in the HTML (crawlers, no-JS, first paint).
  * `immediate` variants run pure-CSS intros for the top of a page (fast LCP). Everything
  * else is hidden by JS only while it is still below the fold, using opacity only.
+ * Phones skip all of this (no GSAP): each section gets one fade-and-rise instead (PhoneRise).
  */
 
 const belowFold = (el: Element) => el.getBoundingClientRect().top > window.innerHeight * 0.92;
@@ -27,12 +28,12 @@ type SplitProps = {
 export function SplitReveal({ children, as: Tag = "h2", className, delay = 0, immediate, stagger = 0.08, id }: SplitProps) {
   const ref = useRef<HTMLElement>(null);
 
-  useGSAP(
-    () => {
+  useMotion(
+    ({ gsap, SplitText }) => {
       const el = ref.current;
       if (!el || immediate || prefersReducedMotion() || !belowFold(el)) return;
       gsap.set(el, { opacity: 0 });
-      let split: SplitText | null = null;
+      let split: InstanceType<typeof SplitText> | null = null;
       const io = new IntersectionObserver(
         ([entry]) => {
           if (!entry.isIntersecting) return;
@@ -80,8 +81,8 @@ type RevealProps = {
 export function Reveal({ children, as: Tag = "div", className, delay = 0, y = 40, stagger, immediate, id }: RevealProps) {
   const ref = useRef<HTMLElement>(null);
 
-  useGSAP(
-    () => {
+  useMotion(
+    ({ gsap, ScrollTrigger }) => {
       const el = ref.current;
       if (!el || immediate || prefersReducedMotion() || !belowFold(el)) return;
       const targets = stagger ? Array.from(el.children) : [el];
@@ -108,8 +109,8 @@ export function Reveal({ children, as: Tag = "div", className, delay = 0, y = 40
 export function ScrubWords({ text, className, as: Tag = "p", accent = [] }: { text: string; className?: string; as?: ElementType; accent?: string[] }) {
   const ref = useRef<HTMLElement>(null);
 
-  useGSAP(
-    () => {
+  useMotion(
+    ({ gsap }) => {
       const el = ref.current;
       if (!el || prefersReducedMotion()) return;
       const words = el.querySelectorAll<HTMLElement>("[data-w]:not(.text-accent-auto)");
@@ -149,8 +150,8 @@ export function Parallax({
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
-  useGSAP(
-    () => {
+  useMotion(
+    ({ gsap }) => {
       const el = ref.current;
       const inner = el?.firstElementChild as HTMLElement | null;
       if (!el || !inner || prefersReducedMotion()) return;

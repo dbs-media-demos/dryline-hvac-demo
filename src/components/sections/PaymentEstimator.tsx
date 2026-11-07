@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
-import { gsap } from "@/lib/gsap";
+import { isPhone, loadGsap, tween } from "@/lib/motion";
 
 const TERMS = [
   { months: 18, apr: 0, label: "18 months", note: "0% APR promo" },
@@ -28,14 +28,16 @@ export function PaymentEstimator() {
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    gsap.to(shown.current, {
-      v: monthly,
-      duration: reduce ? 0 : 0.8,
-      ease: "power3.out",
-      onUpdate: () => {
-        if (out.current) out.current.textContent = `$${Math.round(shown.current.v).toLocaleString("en-US")}`;
-      },
-    });
+    const draw = () => {
+      if (out.current) out.current.textContent = `$${Math.round(shown.current.v).toLocaleString("en-US")}`;
+    };
+    if (isPhone()) {
+      return tween(shown.current.v, monthly, reduce ? 0 : 500, (v) => {
+        shown.current.v = v;
+        draw();
+      });
+    }
+    void loadGsap().then(({ gsap }) => gsap.to(shown.current, { v: monthly, duration: reduce ? 0 : 0.8, ease: "power3.out", onUpdate: draw }));
   }, [monthly]);
 
   const pct = ((price - 3900) / (16000 - 3900)) * 100;

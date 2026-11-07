@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { useMotion } from "@/lib/motion";
 
 /**
  * Sticky stacking cards: each step pins a little lower than the last, and the ones
@@ -10,8 +10,8 @@ import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 export function StepStack({ steps }: { steps: { title: string; body: string }[] }) {
   const root = useRef<HTMLOListElement>(null);
 
-  useGSAP(
-    () => {
+  useMotion(
+    ({ gsap, ScrollTrigger }) => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const cards = gsap.utils.toArray<HTMLElement>("[data-step]", root.current);

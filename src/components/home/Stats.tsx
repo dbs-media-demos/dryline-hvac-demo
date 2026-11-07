@@ -39,25 +39,25 @@ function previewStats(biz: Biz): Stat[] {
 export function Stats({ biz = defaultBiz }: { biz?: Biz }) {
   const stats = biz.preview ? previewStats(biz) : conceptStats;
   return (
-    <section className="py-20 md:py-28" aria-label={biz.preview ? biz.name : "Dryline by the numbers"}>
+    <section className="py-20 md:py-28 phone:pt-4 phone:pb-7" aria-label={biz.preview ? biz.name : "Dryline by the numbers"}>
       {/* The separators are little fans that spin up as you scroll */}
       <FanSpinner>
-      <Marquee duration={45} className="border-y border-line py-5">
+      <Marquee duration={45} phoneWrap className="border-y border-line py-5 phone:border-0 phone:px-5 phone:py-0">
         {promises.map((p) => (
-          <span key={p} className="flex items-center gap-8 pr-8 font-display text-[clamp(1.4rem,2.6vw,2.2rem)] tracking-[-0.04em] whitespace-nowrap">
+          <span key={p} className="flex items-center gap-8 pr-8 font-display text-[clamp(1.4rem,2.6vw,2.2rem)] tracking-[-0.04em] whitespace-nowrap phone:gap-1.5 phone:pr-3 phone:font-sans phone:text-[0.8rem] phone:font-medium phone:leading-[1.6] phone:tracking-normal">
             {p}
             <FanBlades className="spin-fan h-[0.95em] w-[0.95em] text-accent-auto" />
           </span>
         ))}
       </Marquee>
       </FanSpinner>
-      <Reveal className="mx-auto mt-16 grid max-w-[1480px] gap-10 px-5 sm:grid-cols-2 md:px-8 lg:grid-cols-4" stagger={0.1}>
+      <Reveal className="mx-auto mt-16 grid max-w-[1480px] gap-10 px-5 phone:mt-3 phone:grid-cols-2 phone:gap-x-5 phone:gap-y-3 sm:grid-cols-2 md:px-8 lg:grid-cols-4" stagger={0.1}>
         {stats.map((s) => (
-          <div key={s.label} className="border-t border-navy pt-6">
-            <p className="font-display text-[clamp(2.8rem,5vw,4.4rem)] leading-none tracking-[-0.06em]">
+          <div key={s.label} className="border-t border-navy pt-6 phone:pt-2.5">
+            <p className="font-display text-[clamp(2.8rem,5vw,4.4rem)] phone:text-[1.6rem] leading-none tracking-[-0.06em]">
               <Counter value={s.value} decimals={s.decimals} suffix={s.suffix} />
             </p>
-            <p className="mt-4 max-w-[16rem] text-muted">{s.label}</p>
+            <p className="mt-4 max-w-[16rem] text-muted phone:mt-1 phone:text-[0.8rem] phone:leading-[1.3]">{s.label}</p>
           </div>
         ))}
       </Reveal>

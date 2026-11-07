@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import clsx from "clsx";
-import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+import { getGsap, useMotion, prefersReducedMotion } from "@/lib/motion";
 
 /*
  * Small HVAC moments, one per homepage section: fans that spin up with the scroll, a supply
  * register that opens and breathes, a condenser that runs tired as the system ages, a filter
  * that gets swapped, a thermostat that settles, frost that melts off the glass. All of them
- * sit still under prefers-reduced-motion.
+ * sit still under prefers-reduced-motion. On phones the fans and the frost stay still too; the
+ * condenser in the calculator keeps running (CSS, no GSAP).
  */
 
 /** Sets data-in="true" on the element the first time it scrolls into view (CSS does the rest). */
@@ -46,8 +47,8 @@ export function FanBlades({ className }: { className?: string }) {
 /** Every `.spin-fan` inside idles slowly and spins up with the scroll speed, then coasts down. */
 export function FanSpinner({ children, className }: { children: ReactNode; className?: string }) {
   const root = useRef<HTMLDivElement>(null);
-  useGSAP(
-    () => {
+  useMotion(
+    ({ gsap, ScrollTrigger }) => {
       if (prefersReducedMotion()) return;
       const fans = root.current!.querySelectorAll(".spin-fan");
       const IDLE = 0.3;
@@ -122,15 +123,16 @@ export function Condenser({ age, tired, className }: { age: number; tired: boole
   const fan = useRef<SVGGElement>(null);
   const tween = useRef<gsap.core.Tween | null>(null);
 
-  useGSAP(() => {
+  useMotion(({ gsap }) => {
     if (prefersReducedMotion()) return;
     tween.current = gsap.to(fan.current, { rotation: 360, svgOrigin: "32 30", duration: 0.9, ease: "none", repeat: -1 });
     return () => tween.current?.kill();
   });
   useEffect(() => {
-    if (!tween.current) return;
-    const speed = gsap.utils.mapRange(1, 25, 1.6, 0.28, age);
-    gsap.to(tween.current, { timeScale: speed, duration: 0.8, ease: "power2.out" });
+    const kit = getGsap();
+    if (!tween.current || !kit) return;
+    const speed = kit.gsap.utils.mapRange(1, 25, 1.6, 0.28, age);
+    kit.gsap.to(tween.current, { timeScale: speed, duration: 0.8, ease: "power2.out" });
   }, [age]);
 
   return (
@@ -138,7 +140,7 @@ export function Condenser({ age, tired, className }: { age: number; tired: boole
       <rect x="4" y="2" width="56" height="54" rx="6" fill="none" stroke="rgba(245,249,251,0.35)" strokeWidth="1.5" />
       <circle cx="32" cy="30" r="21" fill="none" stroke="rgba(245,249,251,0.22)" strokeWidth="1.2" />
       <circle cx="32" cy="30" r="15" fill="none" stroke="rgba(245,249,251,0.12)" strokeWidth="1" />
-      <g ref={fan} fill="var(--accent)" opacity="0.9">
+      <g ref={fan} className="condenser-fan" fill="var(--accent)" opacity="0.9" style={{ animationDuration: `${(0.9 / (1.6 - ((age - 1) / 24) * 1.32)).toFixed(2)}s` }}>
         {[0, 120, 240].map((r) => (
           <path key={r} d="M32 30c-1.6-6.4.4-13.4 6.2-15.4 2.2 4.4-.8 11.4-6.2 15.4Z" transform={`rotate(${r} 32 30)`} />
         ))}
@@ -191,9 +193,10 @@ export function SettleDial({ lang = "en", className }: { lang?: "en" | "sr"; cla
   const R = 26;
   const C = 2 * Math.PI * R;
   const SWEEP = 0.75; // the ring is a 270° arc
+  const restAt = (to - lo) / (hi - lo); // what the HTML (and phones, which don't animate it) shows
 
-  useGSAP(
-    () => {
+  useMotion(
+    ({ gsap, ScrollTrigger }) => {
       const set = (v: number) => {
         const p = gsap.utils.clamp(0, 1, (v - lo) / (hi - lo));
         arc.current!.style.strokeDasharray = `${(p * SWEEP * C).toFixed(2)} ${C.toFixed(2)}`;
@@ -221,8 +224,8 @@ export function SettleDial({ lang = "en", className }: { lang?: "en" | "sr"; cla
       <span className="relative grid h-16 w-16 shrink-0 place-items-center">
         <svg viewBox="0 0 64 64" className="absolute inset-0 h-full w-full -rotate-[225deg]" aria-hidden>
           <circle cx="32" cy="32" r={R} fill="none" stroke="rgba(245,249,251,0.14)" strokeWidth="4" strokeLinecap="round" strokeDasharray={`${SWEEP * C} ${C}`} />
-          <circle ref={arc} cx="32" cy="32" r={R} fill="none" stroke="var(--accent)" strokeWidth="4" strokeLinecap="round" strokeDasharray={`0 ${C}`} />
-          <g ref={knob}>
+          <circle ref={arc} cx="32" cy="32" r={R} fill="none" stroke="var(--accent)" strokeWidth="4" strokeLinecap="round" strokeDasharray={`${(restAt * SWEEP * C).toFixed(2)} ${C.toFixed(2)}`} />
+          <g ref={knob} transform={`rotate(${(restAt * 270).toFixed(1)} 32 32)`}>
             <circle cx={32 + R} cy="32" r="4" fill="var(--frost)" />
           </g>
         </svg>
@@ -241,7 +244,7 @@ export function SettleDial({ lang = "en", className }: { lang?: "en" | "sr"; cla
 /** Frost on the glass that melts away as the section scrolls up into view. */
 export function FrostMelt() {
   const ref = useRef<HTMLDivElement>(null);
-  useGSAP(() => {
+  useMotion(({ gsap }) => {
     if (prefersReducedMotion()) return;
     gsap.fromTo(
       ref.current,

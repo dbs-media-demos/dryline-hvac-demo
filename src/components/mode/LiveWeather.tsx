@@ -54,7 +54,7 @@ export function LiveWeather({ className }: { className?: string }) {
       <span className="block font-mono text-[0.66rem] tracking-[0.14em] text-frost/60 uppercase">
         {sr ? `Trenutno · ${city}` : biz.preview ? `Right now in ${city}` : "Right now in OKC"}
       </span>
-      <span className="mt-1 block font-display text-[1.05rem] tracking-[-0.03em]">
+      <span className="mt-1 block font-display text-[1.05rem] tracking-[-0.03em] phone:mt-0 phone:font-sans phone:text-[0.86rem] phone:font-semibold phone:tracking-normal phone:whitespace-nowrap">
         {wx ? (
           <>
             {wx.temp}°{sr ? "C" : "F"} <span className="text-frost/60">· {describe(wx.code, sr ? "sr" : "en")}</span>

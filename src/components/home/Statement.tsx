@@ -15,8 +15,8 @@ export function Statement({ biz = defaultBiz }: { biz?: Biz }) {
   const text = !biz.preview ? statement.concept : biz.lang === "sr" ? statement.sr : statement.en;
   const accent = !biz.preview ? ["104°", "9°", "line"] : biz.lang === "sr" ? ["40°.", "deset.", "strani,"] : ["summers.", "winters.", "line,"];
   return (
-    <section className="mix-scope relative py-24 md:py-36" aria-labelledby="statement-title">
-      <div className="mx-auto grid max-w-[1480px] gap-14 px-5 md:px-8 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-0">
+    <section className="mix-scope relative py-24 md:py-36 phone:py-8" aria-labelledby="statement-title">
+      <div className="mx-auto grid max-w-[1480px] gap-14 px-5 phone:gap-3 md:px-8 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-0">
         <div>
           <Reveal>
             <h2 id="statement-title" className="eyebrow text-accent-auto flex items-center gap-3">
@@ -25,7 +25,7 @@ export function Statement({ biz = defaultBiz }: { biz?: Biz }) {
             </h2>
           </Reveal>
           <ScrubWords
-            className="mt-8 font-display text-[clamp(1.75rem,3.4vw,3.2rem)] leading-[1.08] tracking-[-0.045em]"
+            className="mt-8 font-display text-[clamp(1.75rem,3.4vw,3.2rem)] leading-[1.08] tracking-[-0.045em] phone:mt-2.5 phone:text-[1.06rem] phone:leading-[1.26] phone:tracking-[-0.03em]"
             text={text}
             accent={accent}
           />
@@ -36,7 +36,8 @@ export function Statement({ biz = defaultBiz }: { biz?: Biz }) {
           <ComfortLine lang={biz.lang === "sr" ? "sr" : "en"} />
         </Reveal>
 
-        <Promises />
+        {/* Phones show these with the estimate, further up the page */}
+        <Promises className="phone:hidden" />
       </div>
     </section>
   );

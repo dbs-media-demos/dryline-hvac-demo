@@ -11,8 +11,8 @@ export function PreviewMap({ biz }: { biz: Biz }) {
   const embed = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=14&output=embed`;
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
   return (
-    <section className="py-24 md:py-36" aria-labelledby="area-title">
-      <div className="mx-auto grid max-w-[1480px] gap-14 px-5 md:px-8 lg:grid-cols-[1fr_1.15fr] lg:items-center">
+    <section className="py-24 md:py-36 phone:py-10" aria-labelledby="area-title">
+      <div className="mx-auto grid max-w-[1480px] gap-14 px-5 phone:gap-5 md:px-8 lg:grid-cols-[1fr_1.15fr] lg:items-center">
         <div>
           <SectionHead
             eyebrow={L(biz, "Service area", "Gde radimo")}
@@ -20,7 +20,7 @@ export function PreviewMap({ biz }: { biz: Biz }) {
           >
             {biz.address.full}
           </SectionHead>
-          <Reveal className="mt-10 space-y-6">
+          <Reveal className="mt-10 space-y-6 phone:mt-4 phone:space-y-3">
             <OpenBadge />
             {biz.hours && (
               <dl className="grid max-w-sm grid-cols-[auto_1fr] gap-x-8 gap-y-1.5 text-[0.95rem]">

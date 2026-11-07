@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 import clsx from "clsx";
 import { services, kindLabel } from "@/content/services";
 import { ArrowUpRight, FlameIcon, SnowIcon, WindIcon } from "@/components/ui/Icons";
-import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+import { useMotion, prefersReducedMotion } from "@/lib/motion";
 
 const kindIcon = { cool: SnowIcon, heat: FlameIcon, air: WindIcon };
 
@@ -19,8 +19,8 @@ export function ServicesList() {
   const float = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<number | null>(null);
 
-  useGSAP(
-    () => {
+  useMotion(
+    ({ gsap }) => {
       const el = wrap.current;
       const f = float.current;
       if (!el || !f || !window.matchMedia("(hover: hover) and (pointer: fine)").matches || prefersReducedMotion()) return;
@@ -44,11 +44,11 @@ export function ServicesList() {
 
   return (
     <div ref={wrap} className="relative" onPointerLeave={() => setActive(null)}>
-      <ul className="border-t border-line">
+      <ul className="no-scrollbar border-t border-line phone:-mx-5 phone:flex phone:snap-x phone:snap-mandatory phone:scroll-pl-5 phone:gap-3 phone:overflow-x-auto phone:border-0 phone:px-5">
         {services.map((s, i) => {
           const Icon = kindIcon[s.kind];
           return (
-            <li key={s.slug} className="border-b border-line">
+            <li key={s.slug} className="border-b border-line phone:w-[60vw] phone:max-w-[280px] phone:shrink-0 phone:snap-start phone:border-0">
               <Link
                 href={`/services/${s.slug}`}
                 onPointerEnter={() => setActive(i)}
@@ -56,22 +56,25 @@ export function ServicesList() {
                 onBlur={() => setActive(null)}
                 data-cursor="View"
                 className={clsx(
-                  "group grid grid-cols-[auto_1fr_auto] items-center gap-4 py-5 transition-[opacity,color] duration-500 md:grid-cols-[4rem_1fr_14rem_auto] md:gap-6 md:py-7",
+                  "group grid grid-cols-[auto_1fr_auto] items-center gap-4 py-5 transition-[opacity,color] duration-500 md:grid-cols-[4rem_1fr_14rem_auto] md:gap-6 md:py-7 phone:grid-cols-1 phone:gap-2 phone:py-0",
                   active !== null && active !== i ? "md:opacity-35" : "opacity-100",
                 )}
               >
-                <span className="relative block h-16 w-16 overflow-hidden rounded-xl md:hidden">
-                  <Image src={s.photo.src} alt="" fill sizes="64px" quality={60} className="object-cover" style={{ backgroundColor: s.photo.color }} />
+                <span className="relative block h-16 w-16 overflow-hidden rounded-xl phone:aspect-[3/2] phone:h-auto phone:w-full phone:rounded-[16px] md:hidden phone:md:block">
+                  <Image src={s.photo.src} alt="" fill sizes="(max-width: 767px) 60vw, 64px" quality={60} className="object-cover" style={{ backgroundColor: s.photo.color }} />
                 </span>
                 <span className="hidden font-mono text-xs text-muted md:block">{String(i + 1).padStart(2, "0")}</span>
                 <span className="min-w-0">
-                  <span className="flex items-center gap-2 font-mono text-[0.66rem] tracking-[0.14em] text-muted uppercase md:hidden">
+                  <span className="flex items-center gap-2 font-mono text-[0.66rem] tracking-[0.14em] text-muted uppercase phone:hidden md:hidden">
                     <Icon width={13} height={13} /> {kindLabel[s.kind]}
                   </span>
-                  <span className="block font-display text-[1.35rem] leading-tight tracking-[-0.04em] transition-transform duration-700 ease-[var(--ease-out-expo)] md:text-[clamp(1.8rem,3.4vw,3.2rem)] md:group-hover:translate-x-4">
+                  <span className="block font-display text-[1.35rem] phone:text-[1rem] leading-tight tracking-[-0.04em] transition-transform duration-700 ease-[var(--ease-out-expo)] md:text-[clamp(1.8rem,3.4vw,3.2rem)] md:group-hover:translate-x-4">
                     {s.name}
                   </span>
-                  <span className="mt-1 block text-[0.92rem] text-muted md:hidden">{s.price}</span>
+                  <span className="mt-1 block text-[0.92rem] text-muted phone:mt-0 phone:text-[0.8rem] md:hidden phone:md:block">
+                    <span className="hidden phone:inline">{kindLabel[s.kind]} · </span>
+                    {s.price}
+                  </span>
                 </span>
                 <span className="hidden text-[0.95rem] text-muted md:block">
                   <span className="flex items-center gap-2 font-mono text-[0.68rem] tracking-[0.14em] uppercase">
@@ -79,7 +82,7 @@ export function ServicesList() {
                   </span>
                   <span className="mt-1 block text-navy">{s.price}</span>
                 </span>
-                <span className="grid h-11 w-11 place-items-center rounded-full border border-line transition-colors duration-500 group-hover:border-transparent group-hover:bg-accent md:h-14 md:w-14">
+                <span className="grid h-11 w-11 place-items-center rounded-full border border-line transition-colors duration-500 group-hover:border-transparent group-hover:bg-accent md:h-14 md:w-14 phone:hidden">
                   <ArrowUpRight width={18} height={18} className="transition-transform duration-500 group-hover:rotate-45" />
                 </span>
               </Link>

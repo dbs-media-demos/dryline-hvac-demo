@@ -9,10 +9,11 @@
 - Vercel project: dryline-hvac-demo (team "Dimitrije's projects"), no custom domain
 - Stack: Next.js 16.3.6, React 19.2.8, Tailwind v4, GSAP 3.15 (ScrollTrigger, SplitText), Lenis
 - Palette: frost #F5F9FB · navy #0A1726 · slate #566677 · glacier #8EE3EF / deep teal #0A7485 (cool) · amber #FFB547 / kiln #C2410C (heat). The accent blends between cool and heat along a "thermal camera" hue sweep, driven by the thermostat.
-- Fonts: Unbounded (display), Figtree (body), Martian Mono (readouts)
+- Fonts: Unbounded (display), Figtree (body), Martian Mono (readouts, desktop only). Unbounded and Figtree are self-hosted subsets in src/app/fonts (Latin + Latin Ext-A, the weights in use), made with fontTools from the Google Fonts variable TTFs.
+- Phones (under 768 px, or touch under 1024 px; lib/phone.ts): no GSAP, Lenis or Martian Mono are downloaded. Home order: first screen with licence line, proof, project photos, reviews, how the estimate works, form, FAQ, then the rest. Hero stills: public/images/phone (crops of tech-condenser-siding and tech-heating-system).
 - Pages: 31 routes, all static: home; services index + 9 service pages; Comfort Club; repair-or-replace; financing; specials; about; reviews; FAQ; blog + 3 articles; schedule (multi-step); contact; service areas + Edmond, Norman, Moore, Yukon; privacy; 404. Also sitemap.xml, robots.txt, manifest, dynamic OG images (/api/og).
 - Signature features:
-  - **The thermostat dial hero**: drag, scroll or arrow-key a 60–85°F dial. It re-themes the whole site (accent colours, the airflow particle field that sinks for cooling and rises for heating, frost ↔ flame hero photo, "Cool it down." ↔ "Warm it up." headline, the rotating logo) and remembers the setting.
+  - **The thermostat dial hero**: drag or arrow-key a 60–85°F dial (on phones, a Cool/Heat tap control). It re-themes the whole site (accent colours, the airflow particle field that sinks for cooling and rises for heating, frost ↔ flame hero photo, "Cool it down." ↔ "Warm it up." headline, the rotating logo) and remembers the setting.
   - **"The dryline is moving"**: a pinned scroll scene where a weather front sweeps across the screen, turning a July storm sky into a January night and shifting the section from cooling to heating.
   - **Repair-or-replace calculator**: system age, quote, SEER and bill feed an elastic gauge needle and a rolling estimated-savings readout (labelled as estimates).
   - **Comfort Club tiers**: monthly/yearly toggle with odometer-rolling prices, cursor-tilt cards.

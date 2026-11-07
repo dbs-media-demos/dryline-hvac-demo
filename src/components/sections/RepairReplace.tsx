@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import { gsap } from "@/lib/gsap";
+import { isPhone, loadGsap, tween } from "@/lib/motion";
 import { ArrowIcon } from "@/components/ui/Icons";
 import { Condenser } from "@/components/fx/HvacTouches";
 
@@ -74,10 +74,10 @@ function Range({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4">
-        <label htmlFor={id} className="font-medium">
+        <label htmlFor={id} className="font-medium phone:text-[0.92rem]">
           {label}
         </label>
-        <output htmlFor={id} className="font-display text-[1.25rem] tracking-[-0.03em] tabular">
+        <output htmlFor={id} className="font-display text-[1.25rem] phone:text-[1rem] tracking-[-0.03em] tabular">
           {format(value)}
         </output>
       </div>
@@ -89,11 +89,11 @@ function Range({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="range mt-3 w-full"
+        className="range mt-3 w-full phone:mt-1"
         style={{ "--pct": `${pct}%` } as React.CSSProperties}
         aria-valuetext={format(value)}
       />
-      {hint && <p className="mt-1.5 text-[0.82rem] text-muted">{hint}</p>}
+      {hint && <p className="mt-1.5 text-[0.82rem] text-muted phone:mt-0 phone:text-[0.78rem]">{hint}</p>}
     </div>
   );
 }
@@ -110,34 +110,55 @@ export function RepairReplace() {
   const tenEl = useRef<HTMLSpanElement>(null);
   const shown = useRef({ s: result.savings });
   const started = useRef(false);
+  const angleNow = useRef(-90);
 
   useEffect(() => {
     const angle = -90 + result.score * 180;
     const first = !started.current;
     started.current = true;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    gsap.to(needle.current, {
-      rotation: angle,
-      svgOrigin: "160 160",
-      duration: reduce ? 0 : first ? 2 : 1.1,
-      ease: first ? "elastic.out(1, 0.45)" : "elastic.out(1, 0.6)",
-    });
-    gsap.to(shown.current, {
-      s: result.savings,
-      duration: reduce ? 0 : 0.9,
-      ease: "power3.out",
-      onUpdate: () => {
-        if (savingsEl.current) savingsEl.current.textContent = `$${Math.round(shown.current.s).toLocaleString("en-US")}`;
-        if (tenEl.current) tenEl.current.textContent = `$${(Math.round((shown.current.s * 10) / 50) * 50).toLocaleString("en-US")}`;
-      },
+    const drawSavings = () => {
+      if (savingsEl.current) savingsEl.current.textContent = `$${Math.round(shown.current.s).toLocaleString("en-US")}`;
+      if (tenEl.current) tenEl.current.textContent = `$${(Math.round((shown.current.s * 10) / 50) * 50).toLocaleString("en-US")}`;
+    };
+    // Phones: the needle swings to the answer with a little overshoot, without GSAP
+    if (isPhone()) {
+      const overshoot = (t: number) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2;
+      const stopNeedle = tween(
+        angleNow.current,
+        angle,
+        reduce ? 0 : 600,
+        (a) => {
+          angleNow.current = a;
+          needle.current?.setAttribute("transform", `rotate(${a.toFixed(2)} 160 160)`);
+        },
+        overshoot,
+      );
+      const stopSavings = tween(shown.current.s, result.savings, reduce ? 0 : 500, (s) => {
+        shown.current.s = s;
+        drawSavings();
+      });
+      return () => {
+        stopNeedle();
+        stopSavings();
+      };
+    }
+    void loadGsap().then(({ gsap }) => {
+      gsap.to(needle.current, {
+        rotation: angle,
+        svgOrigin: "160 160",
+        duration: reduce ? 0 : first ? 2 : 1.1,
+        ease: first ? "elastic.out(1, 0.45)" : "elastic.out(1, 0.6)",
+      });
+      gsap.to(shown.current, { s: result.savings, duration: reduce ? 0 : 0.9, ease: "power3.out", onUpdate: drawSavings });
     });
   }, [result.score, result.savings]);
 
   const v = copy[result.verdict];
 
   return (
-    <div className="grid overflow-hidden rounded-[28px] bg-white shadow-[0_40px_80px_-40px_rgb(10_23_38/0.35)] ring-1 ring-line lg:grid-cols-[1.05fr_1fr]">
-      <form className="grid gap-8 p-6 sm:p-10" onSubmit={(e) => e.preventDefault()} aria-label="Repair or replace calculator">
+    <div className="grid overflow-hidden rounded-[28px] bg-white shadow-[0_40px_80px_-40px_rgb(10_23_38/0.35)] ring-1 ring-line phone:rounded-[22px] phone:shadow-none lg:grid-cols-[1.05fr_1fr]">
+      <form className="grid gap-8 p-6 sm:p-10 phone:gap-2.5 phone:p-3.5" onSubmit={(e) => e.preventDefault()} aria-label="Repair or replace calculator">
         <Range label="System age" value={age} min={1} max={25} step={1} onChange={setAge} format={(n) => `${n} yr${n === 1 ? "" : "s"}`} />
         <Range
           label="Repair quote"
@@ -150,36 +171,36 @@ export function RepairReplace() {
           hint="The price you've been quoted for this repair."
         />
         <fieldset>
-          <legend className="font-medium">Current efficiency (SEER)</legend>
-          <div className="mt-3 grid grid-cols-5 gap-2">
+          <legend className="font-medium phone:text-[0.92rem]">Current efficiency (SEER)</legend>
+          <div className="mt-3 grid grid-cols-5 gap-2 phone:mt-2 phone:gap-1">
             {SEERS.map((s) => (
               <label
                 key={s.v}
                 className={clsx(
-                  "relative flex min-h-[64px] cursor-pointer flex-col items-center justify-center rounded-2xl border text-center transition-colors",
+                  "relative flex min-h-[64px] phone:min-h-[46px] cursor-pointer flex-col items-center justify-center rounded-2xl border text-center transition-colors",
                   seer === s.v ? "border-transparent bg-navy text-frost" : "border-line hover:border-navy/40",
                 )}
               >
                 <input type="radio" name="seer" value={s.v} checked={seer === s.v} onChange={() => setSeer(s.v)} className="peer sr-only" />
-                <span className="font-display text-lg tracking-[-0.03em]">{s.label}</span>
-                <span className={clsx("text-[0.66rem] leading-tight", seer === s.v ? "text-frost/70" : "text-muted")}>{s.hint}</span>
+                <span className="font-display text-lg phone:text-[0.92rem] tracking-[-0.03em]">{s.label}</span>
+                <span className={clsx("text-[0.66rem] phone:text-[0.58rem] leading-tight", seer === s.v ? "text-frost/70" : "text-muted")}>{s.hint}</span>
                 <span className="pointer-events-none absolute inset-0 rounded-2xl peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--accent-ink)]" />
               </label>
             ))}
           </div>
-          <p className="mt-1.5 text-[0.82rem] text-muted">Not sure? It&rsquo;s on the sticker on your outdoor unit — or pick by the year it was installed.</p>
+          <p className="mt-1.5 text-[0.82rem] text-muted phone:mt-1 phone:text-[0.78rem] phone:leading-snug">Not sure? It&rsquo;s on the sticker on your outdoor unit — or pick by the year it was installed.</p>
         </fieldset>
         <Range label="Summer electric bill" value={bill} min={80} max={600} step={10} onChange={setBill} format={(n) => `$${n}/mo`} />
       </form>
 
-      <div className="theme-navy relative flex flex-col justify-between gap-8 p-6 sm:p-10" aria-live="polite">
+      <div className="theme-navy relative flex flex-col justify-between gap-8 p-6 sm:p-10 phone:gap-2.5 phone:p-3.5" aria-live="polite">
         <div>
           <div className="flex items-start justify-between gap-4">
             <p className="eyebrow text-frost/60">Our honest read</p>
             {/* Your outdoor unit: the older the system, the slower and shakier it runs */}
             <Condenser age={age} tired={result.verdict === "replace"} className="h-12 w-12 shrink-0 sm:h-14 sm:w-14" />
           </div>
-          <svg viewBox="0 -14 320 204" className="mt-4 w-full max-w-[420px]" role="img" aria-label={`Gauge: ${v.title}`}>
+          <svg viewBox="0 -14 320 204" className="mt-4 w-full max-w-[420px] phone:mx-auto phone:-mt-8 phone:max-w-[170px]" role="img" aria-label={`Gauge: ${v.title}`}>
             <defs>
               <linearGradient id="gauge-grad" x1="0" x2="1">
                 <stop offset="0%" stopColor="#34d399" />
@@ -213,33 +234,33 @@ export function RepairReplace() {
             <circle cx="160" cy="160" r="12" fill="#f5f9fb" />
             <circle cx="160" cy="160" r="5" fill="var(--navy)" />
           </svg>
-          <p className="display-md mt-2">{v.title}</p>
-          <p className="mt-3 max-w-[30rem] text-frost/75">{v.body}</p>
+          <p className="display-md mt-2 phone:mt-0">{v.title}</p>
+          <p className="mt-3 max-w-[30rem] text-frost/75 phone:mt-1 phone:text-[0.86rem] phone:leading-[1.32]">{v.body}</p>
         </div>
 
-        <dl className="grid grid-cols-2 gap-5 border-t border-line pt-6">
+        <dl className="grid grid-cols-2 gap-5 border-t border-line pt-6 phone:pt-2">
           <div>
             <dt className="font-mono text-[0.66rem] tracking-[0.12em] text-frost/60 uppercase">Est. yearly savings*</dt>
-            <dd className="mt-1 font-display text-[clamp(1.8rem,3vw,2.5rem)] tracking-[-0.04em] text-accent tabular">
+            <dd className="mt-1 font-display text-[clamp(1.8rem,3vw,2.5rem)] phone:text-[1.3rem] tracking-[-0.04em] text-accent tabular">
               <span ref={savingsEl}>${result.savings.toLocaleString("en-US")}</span>
             </dd>
           </div>
           <div>
             <dt className="font-mono text-[0.66rem] tracking-[0.12em] text-frost/60 uppercase">Over 10 years*</dt>
-            <dd className="mt-1 font-display text-[clamp(1.8rem,3vw,2.5rem)] tracking-[-0.04em] tabular">
+            <dd className="mt-1 font-display text-[clamp(1.8rem,3vw,2.5rem)] phone:text-[1.3rem] tracking-[-0.04em] tabular">
               <span ref={tenEl}>${(Math.round((result.savings * 10) / 50) * 50).toLocaleString("en-US")}</span>
             </dd>
           </div>
         </dl>
-          <div className="-mt-2 flex flex-wrap items-center justify-between gap-4">
-            <p className="text-[0.82rem] text-frost/60">
+          <div className="-mt-2 flex flex-wrap items-center justify-between gap-4 phone:mt-0 phone:gap-2">
+            <p className="text-[0.82rem] text-frost/60 phone:text-[0.78rem]">
               $5,000 rule: {age} × ${repair.toLocaleString("en-US")} = <span className="text-frost">${result.rule.toLocaleString("en-US")}</span>
             </p>
-            <Link href="/schedule?reason=estimate" className="btn btn-accent on-dark">
+            <Link href="/schedule?reason=estimate" className="btn btn-accent on-dark phone:min-h-[44px] phone:w-full">
               Get a free second opinion <ArrowIcon width={18} height={18} />
             </Link>
           </div>
-        <p className="text-[0.75rem] leading-snug text-frost/50">
+        <p className="text-[0.75rem] leading-snug text-frost/50 phone:text-[0.68rem]">
           *Estimates only, for a 16 SEER2 replacement. Assumes cooling is ~55% of your summer bill over 7 cooling months. Actual savings depend on your home, usage, rates and
           installation. Energy-efficiency rebates may be available.
         </p>

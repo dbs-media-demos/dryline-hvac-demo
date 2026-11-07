@@ -2,16 +2,17 @@
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import clsx from "clsx";
+import { PHONE_QUERY } from "@/lib/phone";
 
 const noop = () => () => {};
 const canAutoplay = () => {
   const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-  return !window.matchMedia("(prefers-reduced-motion: reduce)").matches && !conn?.saveData;
+  return !window.matchMedia("(prefers-reduced-motion: reduce)").matches && !window.matchMedia(PHONE_QUERY).matches && !conn?.saveData;
 };
 
 /**
  * Muted looping video that only plays while visible, and never autoplays for
- * reduced-motion or data-saver visitors (they keep the poster frame).
+ * phones, reduced-motion or data-saver visitors (they keep the poster frame).
  */
 export function VideoLoop({ src, poster, className, label }: { src: string; poster: string; className?: string; label: string }) {
   const ref = useRef<HTMLVideoElement>(null);

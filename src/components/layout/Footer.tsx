@@ -23,14 +23,14 @@ const company = [
 
 export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
   return (
-    <footer className="theme-navy relative overflow-hidden pb-40 lg:pb-10">
+    <footer className="theme-navy relative overflow-hidden pb-40 lg:pb-10 phone:pb-24">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-[420px] left-1/2 h-[520px] w-[900px] -translate-x-1/2 rounded-full opacity-25 blur-[120px]"
+        className="pointer-events-none absolute -top-[420px] left-1/2 h-[520px] w-[900px] -translate-x-1/2 rounded-full opacity-25 blur-[120px] phone:hidden"
         style={{ background: "var(--accent)" }}
       />
       <div className="relative mx-auto max-w-[1480px] px-5 md:px-8">
-        <div className="grid gap-12 pt-20 pb-14 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1.2fr]">
+        <div className="grid gap-12 pt-20 pb-14 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1.2fr] phone:grid-cols-2 phone:gap-x-5 phone:gap-y-4 phone:pt-7 phone:pb-4 phone:text-[0.82rem] phone:leading-[1.3] phone:[&_ul]:mt-1.5 phone:[&_ul]:space-y-0.5">
           <div>
             <p className="eyebrow text-muted">Services</p>
             <ul className="mt-5 space-y-2.5">
@@ -55,9 +55,9 @@ export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
               ))}
             </ul>
           </div>
-          <div>
+          <div className="phone:col-span-2">
             <p className="eyebrow text-muted">Service areas</p>
-            <ul className="mt-5 space-y-2.5">
+            <ul className="mt-5 space-y-2.5 phone:grid phone:grid-cols-2 phone:gap-x-5 phone:space-y-0">
               <li>
                 <Link href="/service-areas" className="link-underline text-frost/85 hover:text-frost">
                   {biz.preview ? biz.area : "Oklahoma City metro"}
@@ -70,10 +70,10 @@ export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
                   </Link>
                 </li>
               ))}
-              {!biz.preview && <li className="text-frost/60">Mustang · Nichols Hills · Bethany · Midwest City</li>}
+              {!biz.preview && <li className="text-frost/60 phone:col-span-2">Mustang · Nichols Hills · Bethany · Midwest City</li>}
             </ul>
           </div>
-          <div>
+          <div className="phone:col-span-2">
             <p className="eyebrow text-muted">Visit &amp; call</p>
             <ul className="mt-5 space-y-3 text-frost/85">
               <li>
@@ -103,8 +103,8 @@ export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
                 </span>
               </li>
             </ul>
-            <OpenBadge className="mt-6 text-frost/85" />
-            <dl className="mt-5 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-[0.9rem]">
+            <OpenBadge className="mt-6 text-frost/85 phone:mt-2" />
+            <dl className="mt-5 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-[0.9rem] phone:mt-2.5 phone:gap-y-0 phone:text-[0.82rem]">
               {biz.preview
                 ? weekFromMonday(biz.hours ?? []).map((h) => (
                     <div key={h.day} className="contents">
@@ -122,12 +122,17 @@ export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
           </div>
         </div>
 
-        <div className="flex items-end gap-4 border-t border-line pt-10 md:gap-8" aria-hidden>
-          <LogoMark tone="dark" className="h-[15vw] w-[15vw] max-h-[190px] max-w-[190px]" />
-          <span className="font-display text-[19vw] leading-[0.72] font-semibold tracking-[-0.08em] lg:text-[16.5rem]">{biz.preview ? biz.shortName.toLowerCase() : "dryline"}</span>
+        <div className="flex items-end gap-4 border-t border-line pt-10 md:gap-8 phone:gap-2 phone:pt-4" aria-hidden>
+          <LogoMark tone="dark" className="h-[15vw] w-[15vw] max-h-[190px] max-w-[190px] phone:h-[10vw] phone:w-[10vw]" />
+          <span
+            className="font-display text-[19vw] leading-[0.72] font-semibold tracking-[-0.08em] lg:text-[16.5rem] phone:whitespace-nowrap phone:text-[min(14vw,calc(100vw/var(--wm)))]"
+            style={{ ["--wm" as string]: (biz.preview ? biz.shortName : "dryline").length }}
+          >
+            {biz.preview ? biz.shortName.toLowerCase() : "dryline"}
+          </span>
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 text-[0.8rem] text-frost/60 md:flex-row md:items-center md:justify-between">
+        <div className="mt-10 flex flex-col gap-4 text-[0.8rem] text-frost/60 md:flex-row md:items-center md:justify-between phone:mt-3 phone:gap-1.5 phone:text-[0.72rem] phone:leading-[1.35]">
           <p>
             {biz.preview ? (
               `© ${new Date().getFullYear()} ${biz.name}`

@@ -9,6 +9,7 @@ import { Logo } from "@/components/brand/Logo";
 import { ArrowUpRight, PhoneIcon } from "@/components/ui/Icons";
 import { nav } from "@/lib/site";
 import { useBiz } from "@/components/preview/BizContext";
+import { isPhone } from "@/lib/motion";
 import { telOf } from "@/lib/biz-core";
 import { services, kindLabel, type ServiceKind } from "@/content/services";
 
@@ -18,8 +19,9 @@ export function Header() {
   const biz = useBiz();
   const telHref = telOf(biz);
   const pathname = usePathname();
-  // "clear" over the hero / page top; past it, a see-through glass bar tinted to the section beneath.
-  const [tone, setTone] = useState<"clear" | "light" | "dark">("clear");
+  // "clear" at the very top of the page; once scrolled, solid over the hero (its text must not slide
+  // under a see-through bar) and a glass bar tinted to the section beneath elsewhere. Phones: always solid.
+  const [tone, setTone] = useState<"clear" | "hero" | "light" | "dark">("clear");
   const headerRef = useRef<HTMLElement>(null);
   // Menus remember which page they were opened on, so navigating closes them without an effect.
   const [menuAt, setMenuAt] = useState<string | null>(null);
@@ -37,11 +39,11 @@ export function Header() {
       raf = 0;
       const h = headerRef.current;
       if (!h) return;
-      if (window.scrollY <= 40) return setTone("clear");
+      if (window.scrollY <= (isPhone() ? 4 : 40)) return setTone("clear");
       // Whatever page content sits under the middle of the header decides the tint.
       const r = h.getBoundingClientRect();
       const under = document.elementsFromPoint(window.innerWidth / 2, r.top + r.height / 2).find((el) => !h.contains(el));
-      if (under?.closest("[data-hero]")) setTone("clear");
+      if (under?.closest("[data-hero]")) setTone("hero");
       else setTone(under?.closest(".theme-navy") ? "dark" : "light");
     };
     const onScroll = () => {
@@ -91,9 +93,10 @@ export function Header() {
         ref={headerRef}
         style={{ viewTransitionName: "site-header", top: "var(--bar-h)" }}
         className={clsx(
-          "fixed inset-x-0 z-50 transition-[background-color,color,box-shadow,backdrop-filter] duration-500 ease-[var(--ease-out-expo)]",
-          look === "light" && "bg-frost/60 text-navy shadow-[0_1px_0_rgb(10_23_38/0.08)] backdrop-blur-lg backdrop-saturate-150",
-          look === "dark" && "bg-navy/40 text-frost shadow-[0_1px_0_rgb(245_249_251/0.1)] backdrop-blur-lg backdrop-saturate-150",
+          "fixed inset-x-0 z-50 transition-[background-color,color,box-shadow,backdrop-filter] duration-500 ease-[var(--ease-out-expo)] phone:duration-150",
+          look === "light" && "bg-frost/60 text-navy shadow-[0_1px_0_rgb(10_23_38/0.08)] backdrop-blur-lg backdrop-saturate-150 phone:bg-frost phone:backdrop-blur-none phone:backdrop-saturate-100",
+          look === "dark" && "bg-navy/40 text-frost shadow-[0_1px_0_rgb(245_249_251/0.1)] backdrop-blur-lg backdrop-saturate-150 phone:bg-navy phone:backdrop-blur-none phone:backdrop-saturate-100",
+          look === "hero" && "bg-navy text-frost shadow-[0_1px_0_rgb(245_249_251/0.1)]",
           look === "clear" && "bg-transparent text-frost",
         )}
       >

@@ -109,22 +109,22 @@ export function ServiceAreaList() {
     <ul className="divide-y divide-line border-y border-line">
       {cities.map((c) => (
         <li key={c.slug}>
-          <Link href={`/service-areas/${c.slug}`} className="group flex items-center justify-between gap-4 py-5">
+          <Link href={`/service-areas/${c.slug}`} className="group flex items-center justify-between gap-4 py-5 phone:py-1.5">
             <span>
-              <span className="block font-display text-[1.6rem] tracking-[-0.04em] transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:translate-x-2">
+              <span className="block font-display text-[1.6rem] phone:text-[1.05rem] tracking-[-0.04em] transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:translate-x-2">
                 {c.name}
               </span>
-              <span className="mt-1 block text-[0.9rem] text-muted">
+              <span className="mt-1 block text-[0.9rem] text-muted phone:mt-0 phone:text-[0.76rem] phone:leading-tight">
                 {c.drive} · ZIP {c.zips.slice(0, 3).join(", ")}…
               </span>
             </span>
-            <span className="grid h-11 w-11 place-items-center rounded-full border border-line transition-colors group-hover:border-transparent group-hover:bg-accent">
+            <span className="grid h-11 w-11 place-items-center rounded-full border border-line transition-colors group-hover:border-transparent group-hover:bg-accent phone:h-8 phone:w-8">
               <ArrowUpRight width={18} height={18} />
             </span>
           </Link>
         </li>
       ))}
-      <li className="py-5 text-muted">Also serving Oklahoma City, Mustang, Nichols Hills, The Village, Bethany, Warr Acres, Midwest City and Del City.</li>
+      <li className="py-5 text-muted phone:py-2 phone:text-[0.82rem] phone:leading-snug">Also serving Oklahoma City, Mustang, Nichols Hills, The Village, Bethany, Warr Acres, Midwest City and Del City.</li>
     </ul>
   );
 }

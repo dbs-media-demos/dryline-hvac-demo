@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Phone = under 768 px, or a touch screen under 1024 px (lib/phone.ts). Desktop never matches `phone:`. */
+@custom-variant phone {
+  @media (max-width: 767.98px), (max-width: 1023.98px) and (pointer: coarse) {
+    @slot;
+  }
+}
+@custom-variant not-phone {
+  @media (min-width: 1024px), (min-width: 768px) and (pointer: fine), (min-width: 768px) and (pointer: none) {
+    @slot;
+  }
+}
+
 /*
  * Dryline design tokens.
  * The whole accent system hangs off one number, --mix (0 = full cool, 1 = full heat),
@@ -1169,5 +1181,296 @@ a:focus-visible .map-town circle:first-child {
   .vent-air,
   .reading-flow {
     animation: none;
+  }
+}
+
+/* Calculator fan: desktop spins it with GSAP, phones with this */
+@keyframes condenser-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ───────────────────────── phones ─────────────────────────
+   Simple and fast: no pinned or scrubbed scenes (those live in useMotion, which phones skip), no
+   always-moving decoration, no blurs. What stays: tap feedback, one fade-and-rise per section,
+   swipe rails, the tools, and the thermometer that rides the "day on call" rail. */
+
+@media (max-width: 767.98px), (max-width: 1023.98px) and (pointer: coarse) {
+  :root {
+    --header-h: 64px;
+    transition: --mix 0.5s ease;
+  }
+  /* Two font files on phones: the mono labels are set in Figtree */
+  :root:root {
+    --font-martian: var(--font-figtree);
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-padding-top: calc(var(--header-h) + 12px);
+  }
+  body {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  @layer components {
+    .display-xl {
+      font-size: 2.6rem;
+    }
+    .display-lg {
+      font-size: 1.62rem;
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+    }
+    .display-md {
+      font-size: 1.34rem;
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+    }
+    .lede {
+      font-size: 0.92rem;
+      line-height: 1.38;
+    }
+    .eyebrow {
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+  }
+  .font-mono {
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .cursor-dot,
+  .cursor-ring {
+    display: none;
+  }
+
+  /* The first paint is the page: nothing fades in up top */
+  .anim-heading,
+  .anim-fade,
+  .anim-img,
+  .anim-zoom {
+    animation: none;
+  }
+  ::view-transition-old(.page),
+  ::view-transition-new(.page) {
+    animation: none;
+  }
+
+  /* One fade-and-rise per section (PhoneRise) */
+  .rise-wait {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  .rise-go {
+    transition:
+      opacity 0.6s var(--ease-out-expo),
+      transform 0.6s var(--ease-out-expo);
+  }
+
+  /* Tap feedback; no hover states stuck on after a tap */
+  .btn {
+    transition:
+      transform 0.18s var(--ease-out-expo),
+      background-color 0.2s linear;
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn-accent::before,
+  .btn-accent:hover::before {
+    transform: translateY(101%);
+  }
+  .btn-accent:hover,
+  .theme-navy .btn-accent:hover,
+  .on-dark .btn-accent:hover {
+    color: var(--navy);
+  }
+  main a:not(.btn):active,
+  main summary:active,
+  footer a:active {
+    opacity: 0.6;
+  }
+
+  /* The hero still: the current mode's only (see PhoneStill) */
+  .hero-still-cool,
+  .hero-still-heat {
+    background-size: cover;
+    background-position: 50% 20%;
+  }
+  html:not([data-mode="heat"]) .hero-still-cool {
+    background-image: url("/images/phone/hero-cool.webp");
+  }
+  html[data-mode="heat"] .hero-still-heat {
+    background-image: url("/images/phone/hero-heat.webp");
+  }
+
+  /* The Cool/Heat control */
+  .mode-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgb(245 249 251 / 0.25);
+    transition:
+      background-color 0.3s linear,
+      color 0.3s linear,
+      transform 0.18s var(--ease-out-expo);
+  }
+  .mode-btn:active {
+    transform: scale(0.95);
+  }
+  html:not([data-mode="heat"]) .mode-btn-cool,
+  html[data-mode="heat"] .mode-btn-heat {
+    box-shadow: none;
+    color: var(--navy);
+  }
+  html:not([data-mode="heat"]) .mode-btn-cool {
+    background: var(--cool);
+  }
+  html[data-mode="heat"] .mode-btn-heat {
+    background: var(--heat);
+  }
+
+  /* Always-moving decoration stands still */
+  .live-dot,
+  .marquee-track,
+  .map-ping,
+  .vent-air,
+  .reading-flow,
+  .promise-wire,
+  .promise-roll-track,
+  .cl-flow,
+  .cl-air i,
+  .cl-spin {
+    animation: none;
+  }
+  .map-ping,
+  .cl-air,
+  .frost,
+  .grain::after,
+  .filter-glint,
+  .promise-wire {
+    display: none;
+  }
+  [class*="blur-[120px]"] {
+    display: none;
+  }
+  .cl-chip,
+  .cl-pin {
+    backdrop-filter: none;
+  }
+  .promises,
+  .cl {
+    max-width: none;
+  }
+
+  /* A marquee is a list (phoneWrap) or a swipe rail, and one copy of it */
+  .marquee {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .marquee::-webkit-scrollbar {
+    display: none;
+  }
+  .marquee-track > [aria-hidden] {
+    display: none;
+  }
+  .marquee[data-phone-wrap] {
+    overflow: visible;
+  }
+  .marquee[data-phone-wrap] .marquee-track {
+    width: 100%;
+  }
+  .marquee[data-phone-wrap] .marquee-track > :first-child {
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  /* The promise cards swipe; every hour on the clock at once, same price */
+  .promises {
+    display: flex;
+    gap: 0.6rem;
+    margin-inline: -1.25rem;
+    padding-inline: 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 1.25rem;
+    scrollbar-width: none;
+  }
+  .promises::-webkit-scrollbar {
+    display: none;
+  }
+  .promise {
+    flex: 0 0 min(78vw, 340px);
+    scroll-snap-align: start;
+    border-radius: 18px;
+    padding: 0.85rem 0.85rem 1rem;
+  }
+  .promise p.mt-6 {
+    margin-top: 0.7rem;
+  }
+  .promise p.mt-2 {
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .promise-roll {
+    flex: 1;
+    height: auto;
+    white-space: normal;
+    line-height: 1.5;
+  }
+  .promise-roll-track {
+    flex-flow: row wrap;
+    column-gap: 0.4em;
+  }
+  .promise-roll-track > span {
+    height: auto;
+  }
+  .promise-roll-track > span:last-child {
+    display: none;
+  }
+  .promise-roll-track > span:not(:nth-last-child(2))::after {
+    content: " ·";
+  }
+
+  /* Sticky stacks become plain stacks */
+  [data-step] {
+    position: static;
+  }
+
+  /* A phone on its side: the headline beside the Call button, both on the first screen */
+  @media (max-height: 500px) {
+    .hero-grid {
+      grid-template-columns: 1fr 1fr;
+      column-gap: 1.5rem;
+      padding-top: calc(var(--header-h) + 26px);
+    }
+    .hero-left {
+      grid-column: 1;
+    }
+    .hero-right {
+      grid-column: 2;
+    }
+    .lede.hero-right {
+      grid-row: 1 / span 3;
+    }
+    .hero-grid h1 {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* The fan in the calculator keeps running: it's part of the tool */
+  .condenser-fan {
+    transform-box: view-box;
+    transform-origin: 32px 30px;
+    animation: condenser-spin 0.9s linear infinite;
   }
 }

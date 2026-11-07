@@ -11,11 +11,11 @@ export function SectionHead({ eyebrow, title, children, className, align = "left
           {eyebrow}
         </p>
       </Reveal>
-      <SplitReveal as={as} className={clsx("display-lg mt-5", align === "center" ? "mx-auto max-w-[18ch]" : "max-w-[16ch]")}>
+      <SplitReveal as={as} className={clsx("display-lg mt-5 phone:mt-3", align === "center" ? "mx-auto max-w-[18ch] phone:max-w-none" : "max-w-[16ch] phone:max-w-none")}>
         {title}
       </SplitReveal>
       {children && (
-        <Reveal delay={0.1} className={clsx("lede mt-6 text-muted", align === "center" ? "mx-auto max-w-[40rem]" : "max-w-[38rem]")}>
+        <Reveal delay={0.1} className={clsx("lede mt-6 text-muted phone:mt-2.5", align === "center" ? "mx-auto max-w-[40rem]" : "max-w-[38rem]")}>
           {children}
         </Reveal>
       )}

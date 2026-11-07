@@ -28,19 +28,19 @@ export function CtaBand({
       </Parallax>
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-navy via-navy/60 to-navy/30" />
       <FrostMelt />
-      <div className="mx-auto flex min-h-[80svh] max-w-[1480px] flex-col justify-end px-5 py-20 md:px-8 md:py-28">
+      <div className="mx-auto flex min-h-[80svh] max-w-[1480px] flex-col justify-end px-5 py-20 md:px-8 md:py-28 phone:min-h-0 phone:pt-10 phone:pb-7">
         <Reveal>
           <OpenBadge className="text-frost/85" />
         </Reveal>
-        <SplitReveal id="cta-title" className="display-lg mt-6 max-w-[17ch]">
+        <SplitReveal id="cta-title" className="display-lg mt-6 max-w-[17ch] phone:mt-3 phone:max-w-none">
           {title}
         </SplitReveal>
-        <Reveal className="lede mt-6 max-w-[34rem] text-frost/75">{body}</Reveal>
-        <Reveal className="mt-9 flex flex-col gap-3 sm:flex-row">
+        <Reveal className="lede mt-6 max-w-[34rem] text-frost/75 phone:mt-2.5">{body}</Reveal>
+        <Reveal className="mt-9 flex flex-col gap-3 sm:flex-row phone:mt-4 phone:gap-2">
           <a href={telOf(biz)} className="btn btn-accent on-dark min-h-[56px] px-7">
             <PhoneIcon /> Call {biz.phoneDisplay}
           </a>
-          <Link href="/schedule" className="btn btn-ghost min-h-[56px] px-7">
+          <Link href="/schedule" className="btn btn-ghost min-h-[56px] px-7 phone:min-h-[46px]">
             Schedule online in 2 minutes
           </Link>
         </Reveal>

@@ -1,15 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import clsx from "clsx";
 import { useBiz } from "@/components/preview/BizContext";
-import { gsap } from "@/lib/gsap";
+import { getGsap } from "@/lib/motion";
 import { TEMP_MAX, TEMP_MIN, getTemp, modeFor, setTemp, subscribeTemp } from "@/lib/mode";
 import { FlameIcon, SnowIcon } from "@/components/ui/Icons";
 
 /*
  * The thermostat dial. 270° of travel, 60–85 °F.
- * Drag it, scroll it, or focus it and use the arrow keys. It drives the whole site's palette.
+ * Drag it, or focus it and use the arrow keys. A wheel over it scrolls the page, and a finger
+ * swiping up or down does too (touch-pan-y). It drives the whole site's palette.
  */
 
 const SWEEP = 270;
@@ -52,8 +53,10 @@ export function Dial({ className }: { className?: string }) {
   const tween = useRef<gsap.core.Tween | null>(null);
   const animateTo = (to: number, duration: number, ease: string) => {
     tween.current?.kill();
+    const kit = getGsap();
+    if (!kit) return commit(to);
     const obj = { t: getTemp() };
-    tween.current = gsap.to(obj, { t: to, duration, ease, onUpdate: () => commit(obj.t) });
+    tween.current = kit.gsap.to(obj, { t: to, duration, ease, onUpdate: () => commit(obj.t) });
   };
 
   const markUsed = () => {
@@ -103,21 +106,6 @@ export function Dial({ className }: { className?: string }) {
     svg.current?.releasePointerCapture(e.pointerId);
   };
 
-  // Wheel needs a non-passive listener to stop the page scrolling while turning the dial.
-  useEffect(() => {
-    const el = svg.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      markUsed();
-      tween.current?.kill();
-      commit(getTemp() + (e.deltaY > 0 ? -0.5 : 0.5));
-    };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [commit]);
-
   const onKeyDown = (e: React.KeyboardEvent) => {
     const t = getTemp();
     const map: Record<string, number> = {
@@ -165,13 +153,12 @@ export function Dial({ className }: { className?: string }) {
         aria-valuetext={`${shown} degrees, ${mode === "cool" ? "cooling" : "heating"}`}
         aria-orientation="horizontal"
         data-cursor="Drag"
-        data-lenis-prevent
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onKeyDown={onKeyDown}
-        className={clsx("block h-auto w-full touch-none outline-none [&:focus-visible_.focus-ring]:opacity-100", dragging ? "cursor-grabbing" : "cursor-grab")}
+        className={clsx("block h-auto w-full touch-pan-y outline-none [&:focus-visible_.focus-ring]:opacity-100", dragging ? "cursor-grabbing" : "cursor-grab")}
       >
         <defs>
           <radialGradient id="dial-face" cx="50%" cy="38%" r="70%">
@@ -290,7 +277,7 @@ export function Dial({ className }: { className?: string }) {
         )}
         aria-hidden
       >
-        Drag · scroll · or use arrow keys
+        Drag · or use arrow keys
       </p>
     </div>
   );

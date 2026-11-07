@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import clsx from "clsx";
 import { ClockIcon, ShieldIcon } from "@/components/ui/Icons";
 
 /*
@@ -11,7 +12,7 @@ import { ClockIcon, ShieldIcon } from "@/components/ui/Icons";
 
 const times = ["Tue · 2 p.m.", "Midnight", "Sunday", "July 4th"];
 
-export function Promises() {
+export function Promises({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export function Promises() {
   }, []);
 
   return (
-    <div ref={ref} className="promises grid max-w-[44rem] self-start lg:mt-12 gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2" data-in="false">
+    <div ref={ref} className={clsx("promises grid max-w-[44rem] self-start lg:mt-12 gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2", className)} data-in="false">
       <article className="promise">
         <div className="flex items-center gap-2 rounded-2xl bg-mist/70 px-3.5 py-3 font-mono text-[0.7rem]">
           <ClockIcon width={15} height={15} className="shrink-0 text-muted" />

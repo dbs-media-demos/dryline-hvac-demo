@@ -63,7 +63,7 @@ function TiltCard({ children, className }: { children: React.ReactNode; classNam
     if (ref.current) ref.current.style.transform = "";
   };
   return (
-    <div ref={ref} onPointerMove={onMove} onPointerLeave={reset} className={clsx("group transition-transform duration-700 ease-[var(--ease-out-expo)] will-change-transform", className)}>
+    <div ref={ref} onPointerMove={onMove} onPointerLeave={reset} className={clsx("group transition-transform duration-700 ease-[var(--ease-out-expo)] phone:transition-none not-phone:will-change-transform", className)}>
       {children}
     </div>
   );
@@ -75,7 +75,7 @@ export function ComfortClub() {
   return (
     <div>
       {/* Every plan sends filters: this one gets swapped as it comes into view */}
-      <FilterSwap className="mb-8 justify-center">
+      <FilterSwap className="mb-8 justify-center phone:mb-2 phone:[&>svg]:hidden">
         <span className="font-mono text-[0.68rem] tracking-[0.12em] text-muted uppercase">
           Fresh filters, <span className="text-accent-auto">delivered</span>
         </span>
@@ -97,7 +97,7 @@ export function ComfortClub() {
               role="radio"
               aria-checked={yearly === o.v}
               onClick={() => setYearly(o.v)}
-              className={clsx("relative z-10 min-h-[44px] rounded-full px-5 text-[0.92rem] font-medium whitespace-nowrap transition-colors duration-500", yearly === o.v ? "text-frost" : "text-navy")}
+              className={clsx("relative z-10 min-h-[44px] rounded-full px-5 phone:px-3 text-[0.92rem] phone:text-[0.84rem] font-medium whitespace-nowrap transition-colors duration-500", yearly === o.v ? "text-frost" : "text-navy")}
             >
               {o.label}
             </button>
@@ -105,15 +105,15 @@ export function ComfortClub() {
         </div>
       </div>
 
-      <Reveal className="mt-12 grid gap-5 lg:grid-cols-3 lg:gap-6" stagger={0.12}>
+      <Reveal className="no-scrollbar mt-12 grid gap-5 lg:grid-cols-3 lg:gap-6 phone:-mx-5 phone:mt-3 phone:flex phone:snap-x phone:snap-mandatory phone:scroll-pl-5 phone:gap-3 phone:overflow-x-auto phone:px-5" stagger={0.12}>
         {plans.map((p) => {
           const price = yearly ? String(p.yearly) : p.monthly.toFixed(2);
           const saved = Math.round(p.monthly * 12 - p.yearly);
           return (
-            <TiltCard key={p.id} className="h-full">
+            <TiltCard key={p.id} className="h-full phone:h-auto phone:w-[78vw] phone:max-w-[340px] phone:shrink-0 phone:snap-start">
               <article
                 className={clsx(
-                  "@container relative flex h-full flex-col overflow-hidden rounded-[28px] p-7 sm:p-9",
+                  "@container relative flex h-full flex-col overflow-hidden rounded-[28px] p-7 sm:p-9 phone:rounded-[22px] phone:p-4",
                   p.featured ? "theme-navy shadow-[0_40px_80px_-30px_rgb(10_23_38/0.6)]" : "bg-white ring-1 ring-line",
                 )}
                 aria-labelledby={`plan-${p.id}`}
@@ -124,44 +124,44 @@ export function ComfortClub() {
                   style={{ background: "radial-gradient(400px circle at var(--gx,50%) var(--gy,0%), color-mix(in oklch, var(--accent) 22%, transparent), transparent 60%)" }}
                 />
                 <div className="relative flex items-center justify-between gap-3">
-                  <h3 id={`plan-${p.id}`} className="font-display text-[1.5rem] tracking-[-0.04em]">
+                  <h3 id={`plan-${p.id}`} className="font-display text-[1.5rem] tracking-[-0.04em] phone:text-[1.15rem]">
                     {p.name}
                   </h3>
                   {p.featured && <span className="rounded-full bg-accent px-3 py-1 font-mono text-[0.64rem] tracking-[0.12em] text-navy uppercase">Most popular</span>}
                 </div>
-                <p className={clsx("relative mt-2 min-h-[3rem] text-[0.95rem]", p.featured ? "text-frost/70" : "text-muted")}>{p.blurb}</p>
+                <p className={clsx("relative mt-2 min-h-[3rem] text-[0.95rem] phone:mt-1 phone:min-h-0 phone:text-[0.86rem] phone:leading-snug", p.featured ? "text-frost/70" : "text-muted")}>{p.blurb}</p>
 
-                <p className="relative mt-6 flex flex-wrap items-end gap-x-2 gap-y-1">
+                <p className="relative mt-6 flex flex-wrap items-end gap-x-2 gap-y-1 phone:mt-2">
                   {/* Sized by the card (cqi), so "$34.95" fits the narrow three-column layout too */}
-                  <span className="flex items-start font-display text-[min(3.4rem,20cqi)] leading-none tracking-[-0.06em] whitespace-nowrap">
+                  <span className="flex items-start font-display text-[min(3.4rem,20cqi)] phone:text-[1.9rem] leading-none tracking-[-0.06em] whitespace-nowrap">
                     <span className="mt-[0.12em] mr-0.5 text-[0.47em]">$</span>
                     <Odometer value={price} />
                     <span className="sr-only">{`$${price}`}</span>
                   </span>
                   <span className={clsx("mb-1.5 font-mono text-[0.72rem]", p.featured ? "text-frost/60" : "text-muted")}>/{yearly ? "year" : "month"}</span>
                 </p>
-                <p className={clsx("relative mt-2 h-5 text-[0.82rem] transition-opacity duration-500", yearly ? "opacity-100" : "opacity-0", p.featured ? "text-accent" : "text-accent-auto")}>
+                <p className={clsx("relative mt-2 h-5 text-[0.82rem] phone:mt-0 phone:text-[0.76rem] transition-opacity duration-500", yearly ? "opacity-100" : "opacity-0", p.featured ? "text-accent" : "text-accent-auto")}>
                   You save ${saved} a year
                 </p>
 
-                <dl className={clsx("relative mt-6 divide-y border-y", p.featured ? "divide-white/12 border-white/12" : "divide-line border-line")}>
+                <dl className={clsx("relative mt-6 divide-y border-y phone:mt-1", p.featured ? "divide-white/12 border-white/12" : "divide-line border-line")}>
                   {p.rows.map((r) => (
-                    <div key={r.label} className="flex items-center justify-between gap-4 py-3 text-[0.95rem]">
+                    <div key={r.label} className="flex items-center justify-between gap-4 py-3 text-[0.95rem] phone:py-0.5 phone:text-[0.82rem]">
                       <dt className={p.featured ? "text-frost/70" : "text-muted"}>{r.label}</dt>
                       <dd className="font-semibold">{r.value}</dd>
                     </div>
                   ))}
                 </dl>
-                <ul className="relative mt-5 space-y-2 text-[0.95rem]">
+                <ul className="relative mt-5 space-y-2 text-[0.95rem] phone:mt-1.5 phone:space-y-0 phone:text-[0.82rem] phone:leading-[1.3]">
                   {p.extras.map((x) => (
                     <li key={x} className="flex items-start gap-2.5">
-                      <CheckIcon width={18} height={18} className={clsx("mt-0.5 shrink-0", p.featured ? "text-accent" : "text-accent-auto")} />
+                      <CheckIcon width={18} height={18} className={clsx("mt-0.5 shrink-0 phone:mt-0 phone:h-4 phone:w-4", p.featured ? "text-accent" : "text-accent-auto")} />
                       {x}
                     </li>
                   ))}
                 </ul>
-                <div className="relative mt-auto pt-8">
-                  <Link href={`/schedule?plan=${p.id}`} className={clsx("btn w-full", p.featured ? "btn-accent on-dark" : "btn-navy")}>
+                <div className="relative mt-auto pt-8 phone:pt-3">
+                  <Link href={`/schedule?plan=${p.id}`} className={clsx("btn w-full phone:min-h-[44px]", p.featured ? "btn-accent on-dark" : "btn-navy")}>
                     Join {p.name}
                   </Link>
                 </div>
@@ -170,7 +170,7 @@ export function ComfortClub() {
           );
         })}
       </Reveal>
-      <p className="mt-6 text-center text-[0.85rem] text-muted">Cancel anytime. Every plan: no overtime fees, ever — and a $0 diagnostic when something breaks.</p>
+      <p className="mt-6 text-center text-[0.85rem] text-muted phone:mt-3 phone:text-[0.8rem]">Cancel anytime. Every plan: no overtime fees, ever — and a $0 diagnostic when something breaks.</p>
     </div>
   );
 }

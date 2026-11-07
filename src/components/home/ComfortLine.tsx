@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Photo } from "@/components/ui/Photo";
 import { FanIcon, FlameIcon, SnowIcon } from "@/components/ui/Icons";
-import { gsap, ScrollTrigger, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+import { isPhone, loadGsap, prefersReducedMotion } from "@/lib/motion";
 import { img } from "@/lib/images";
 
 /*
@@ -11,7 +11,8 @@ import { img } from "@/lib/images";
  * indoor temperature held flat at 72° straight through it. Scrolling the section walks the
  * cursor from January to December; hovering, dragging or the arrow keys take over. The section
  * carries its own --mix (hot outside → we cool, cold → we heat), so its accents, the photo and
- * the airflow follow the season under the cursor.
+ * the airflow follow the season under the cursor. Phones don't scrub: the whole year is drawn and
+ * a finger takes the cursor along it (swipes up and down still scroll the page).
  */
 
 const DAYS = 365;
@@ -72,12 +73,12 @@ export function ComfortLine({ lang = "en" }: { lang?: "en" | "sr" }) {
     return `${MONTHS[lang][m]} ${d - MONTH_START[m] + 1}`;
   };
 
-  useGSAP(
+  useEffect(
     () => {
       const el = root.current!;
       const section = el.closest("section") ?? el;
       const box = chart.current!;
-      const reduced = prefersReducedMotion();
+      const reduced = prefersReducedMotion() || isPhone();
 
       let scrollDay = reduced ? PEAK : 0; // where the page scroll puts the cursor
       let manual: number | null = null; // where the visitor put it
@@ -141,24 +142,30 @@ export function ComfortLine({ lang = "en" }: { lang?: "en" | "sr" }) {
         if (manual != null && !dragging && !hovering && !keyed) manual = null;
       };
 
-      // Desktop: the card is sticky, so the whole section drives it. Phones: the card itself.
-      const mm = gsap.matchMedia();
-      const follow = (trigger: Element, start: string, end: string) => () => {
-        const st = ScrollTrigger.create({
-          trigger,
-          start,
-          end,
-          onUpdate: (self) => {
-            scrollDay = self.progress * (DAYS - 1);
-            yieldToScroll();
-            kick();
-          },
-        });
-        return () => st.kill();
-      };
+      // Desktop: the card is sticky, so the whole section drives it. Small non-touch windows: the card itself.
+      let revertScroll: (() => void) | undefined;
+      let dead = false;
       if (!reduced) {
-        mm.add("(min-width: 1024px)", follow(section, "top 45%", "bottom 80%"));
-        mm.add("(max-width: 1023.98px)", follow(el, "top 75%", "bottom 60%"));
+        void loadGsap().then(({ gsap, ScrollTrigger }) => {
+          if (dead) return;
+          const mm = gsap.matchMedia();
+          const follow = (trigger: Element, start: string, end: string) => () => {
+            const st = ScrollTrigger.create({
+              trigger,
+              start,
+              end,
+              onUpdate: (self) => {
+                scrollDay = self.progress * (DAYS - 1);
+                yieldToScroll();
+                kick();
+              },
+            });
+            return () => st.kill();
+          };
+          mm.add("(min-width: 1024px)", follow(section, "top 45%", "bottom 80%"));
+          mm.add("(max-width: 1023.98px)", follow(el, "top 75%", "bottom 60%"));
+          revertScroll = () => mm.revert();
+        });
       }
 
       const dayAt = (clientX: number) => {
@@ -220,7 +227,8 @@ export function ComfortLine({ lang = "en" }: { lang?: "en" | "sr" }) {
       return () => {
         cancelAnimationFrame(raf);
         io.disconnect();
-        mm.revert();
+        dead = true;
+        revertScroll?.();
         box.removeEventListener("pointermove", onMove);
         box.removeEventListener("pointerdown", onDown);
         box.removeEventListener("pointerleave", onLeave);
@@ -231,13 +239,15 @@ export function ComfortLine({ lang = "en" }: { lang?: "en" | "sr" }) {
         section.style.removeProperty("--mix");
       };
     },
-    { scope: root },
+    // Runs once; the scroll and pointer state lives inside
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   const pin = (d: number) => ({ left: pct(xOf(d), W), top: pct(yOf(YEAR[d]), H) });
 
   return (
-    <div ref={root} className="cl theme-navy relative isolate flex h-full flex-col overflow-hidden rounded-[28px] sm:min-h-[620px]" data-mode="heat">
+    <div ref={root} className="cl theme-navy relative isolate flex h-full flex-col overflow-hidden rounded-[28px] sm:min-h-[620px] phone:min-h-0 phone:rounded-[22px]" data-mode="heat">
       {/* The season behind the glass */}
       <div className="cl-photo absolute inset-0 -z-10" style={{ opacity: "var(--summer, 0)" }}>
         <Photo photo={img.summerSun} sizes="(min-width: 1024px) 42vw, 100vw" quality={60} position="50% 70%" />
@@ -248,7 +258,7 @@ export function ComfortLine({ lang = "en" }: { lang?: "en" | "sr" }) {
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgb(10_23_38/0.55)_0%,rgb(10_23_38/0.78)_45%,rgb(10_23_38/0.94)_100%)]" />
 
       {/* Readouts */}
-      <div className="relative grid grid-cols-[1fr_auto] gap-x-6 p-6 sm:p-8">
+      <div className="relative grid grid-cols-[1fr_auto] gap-x-6 p-6 sm:p-8 phone:p-4 phone:pb-0">
         <div>
           <p className="eyebrow flex items-center gap-2 text-frost/70">
             Outside
@@ -257,7 +267,7 @@ export function ComfortLine({ lang = "en" }: { lang?: "en" | "sr" }) {
               {label(0)}
             </span>
           </p>
-          <p className="cl-temp mt-2 font-display text-[clamp(4rem,9vw,6.6rem)] leading-[0.9] tracking-[-0.07em] tabular">
+          <p className="cl-temp mt-2 font-display text-[clamp(4rem,9vw,6.6rem)] phone:text-[2.7rem] leading-[0.9] tracking-[-0.07em] tabular">
             <span ref={out} data-no-translate>
               {fmt(YEAR[0])}
             </span>
@@ -267,13 +277,13 @@ export function ComfortLine({ lang = "en" }: { lang?: "en" | "sr" }) {
           <p className="eyebrow flex items-center justify-end gap-2 text-frost/70">
             <span className="live-dot" aria-hidden /> Inside
           </p>
-          <p className="mt-2 font-display text-[clamp(2.2rem,4.4vw,3.2rem)] leading-[0.9] tracking-[-0.06em] tabular" data-no-translate>
+          <p className="mt-2 font-display text-[clamp(2.2rem,4.4vw,3.2rem)] phone:text-[1.6rem] leading-[0.9] tracking-[-0.06em] tabular" data-no-translate>
             {fmt(INSIDE)}
           </p>
-          <p className="mt-2 font-mono text-[0.68rem] tracking-[0.12em] text-frost/60 uppercase">All year</p>
+          <p className="mt-2 font-mono text-[0.68rem] tracking-[0.12em] text-frost/60 uppercase phone:mt-1">All year</p>
         </div>
 
-        <div className="col-span-2 mt-6 flex flex-wrap items-center gap-2.5">
+        <div className="col-span-2 mt-6 flex flex-wrap items-center gap-2.5 phone:mt-3 phone:gap-1.5">
           <span className="cl-chip inline-flex items-center gap-2 rounded-full px-3.5 py-2 font-mono text-[0.7rem] tracking-[0.14em] uppercase">
             <span className="cl-when-cool items-center gap-2">
               <SnowIcon width={14} height={14} /> Cooling
@@ -295,11 +305,11 @@ export function ComfortLine({ lang = "en" }: { lang?: "en" | "sr" }) {
       </div>
 
       {/* The year */}
-      <div className="relative mt-auto px-6 pt-8 pb-6 sm:px-8 sm:pb-8">
+      <div className="relative mt-auto px-6 pt-8 pb-6 sm:px-8 sm:pb-8 phone:px-4 phone:pt-4 phone:pb-3">
         <div
           ref={chart}
           style={{ ["--yin" as string]: pct(Y_IN, H) }}
-          className="cl-chart relative h-[clamp(220px,34vw,270px)] lg:h-[clamp(240px,23vw,330px)] cursor-ew-resize touch-pan-y outline-none select-none"
+          className="cl-chart relative h-[clamp(220px,34vw,270px)] phone:h-[108px] lg:h-[clamp(240px,23vw,330px)] cursor-ew-resize touch-pan-y outline-none select-none"
           role="slider"
           tabIndex={0}
           aria-label="A year of outside temperatures against the indoor line"
