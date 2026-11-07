@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useBiz } from "@/components/preview/BizContext";
 import { telOf } from "@/lib/biz-core";
 import { techsAvailable } from "@/lib/hours";
+import { isPhone } from "@/lib/motion";
 import { PhoneIcon } from "@/components/ui/Icons";
 
 /** Desktop: thin always-on bar above the header. Phones get the same promise in the bottom bar. */
@@ -11,6 +12,7 @@ export function EmergencyBar() {
   const biz = useBiz();
   const [techs, setTechs] = useState<number | null>(null);
   useEffect(() => {
+    if (isPhone()) return; // never shown there, and the clock starts up Intl
     const update = () => setTechs(techsAvailable());
     update();
     const id = window.setInterval(update, 60_000);

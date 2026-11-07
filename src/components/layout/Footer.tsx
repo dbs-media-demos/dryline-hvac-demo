@@ -23,7 +23,7 @@ const company = [
 
 export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
   return (
-    <footer className="theme-navy relative overflow-hidden pb-40 lg:pb-10 phone:pb-24">
+    <footer className="phone-cv theme-navy relative overflow-hidden pb-40 [--cv-h:851px] lg:pb-10 phone:pb-24">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-[420px] left-1/2 h-[520px] w-[900px] -translate-x-1/2 rounded-full opacity-25 blur-[120px] phone:hidden"

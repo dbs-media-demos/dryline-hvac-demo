@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import clsx from "clsx";
 import { Logo } from "@/components/brand/Logo";
 import { ArrowUpRight, PhoneIcon } from "@/components/ui/Icons";
@@ -31,6 +32,9 @@ export function Header() {
   const setMenuOpen = (v: boolean | ((o: boolean) => boolean)) => setMenuAt((typeof v === "function" ? v(menuOpen) : v) ? pathname : null);
   const setMegaOpen = (v: boolean) => setMegaAt(v ? pathname : null);
   const [preview, setPreview] = useState(services[0]);
+  // Phones don't lay the mobile menu out until it's first opened.
+  const [menuWoken, setMenuWoken] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef(0);
 
   useEffect(() => {
@@ -138,7 +142,13 @@ export function Header() {
             </Link>
             <button
               type="button"
-              onClick={() => setMenuOpen((o) => !o)}
+              onClick={() => {
+                if (!menuWoken) {
+                  flushSync(() => setMenuWoken(true));
+                  menuRef.current?.getBoundingClientRect(); // its closed state, for the opening transition to start from
+                }
+                setMenuOpen((o) => !o);
+              }}
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -210,7 +220,9 @@ export function Header() {
       {/* Mobile menu */}
       <div
         id="mobile-menu"
+        ref={menuRef}
         className={clsx(
+          !menuWoken && "phone:hidden",
           "theme-navy fixed inset-0 z-40 flex flex-col overflow-y-auto px-5 pt-[calc(var(--header-h)+24px)] pb-28 transition-[clip-path] duration-700 ease-[var(--ease-in-out-quart)] lg:hidden",
           menuOpen ? "[clip-path:inset(0_0_0_0)]" : "pointer-events-none [clip-path:inset(0_0_100%_0)]",
         )}

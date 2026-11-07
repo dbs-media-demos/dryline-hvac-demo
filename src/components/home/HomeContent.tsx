@@ -37,6 +37,9 @@ export const homeFaqs = faqs.filter((_, i) => [0, 2, 3, 5, 6, 9].includes(i));
  * the licence line, then proof, project photos, reviews, how the estimate works, the form and the
  * FAQ, with everything else after. Two blocks exist for phones alone (the Cool/Heat control, the
  * estimate intro and the form).
+ *
+ * Phones lay out only what is near the screen (phone-cv in globals.css): --cv-h is each block's
+ * height at 375 px, so the page keeps its length until a block is really measured.
  */
 export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; children?: ReactNode }) {
   return (
@@ -46,20 +49,20 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
       <div className="phone:order-1">
         <Hero biz={biz} />
       </div>
-      <div className="hidden phone:order-3 phone:block">
+      <div className="hidden phone:order-3 phone:block phone-cv [--cv-h:77px]">
         <ModeToggle />
       </div>
-      <div className="phone:order-2">
+      <div className="phone:order-2 phone-cv [--cv-h:318px]">
         <Stats biz={biz} />
       </div>
-      <div className="phone:order-10">
+      <div className="phone:order-10 phone-cv [--cv-h:728px]">
         <Statement biz={biz} />
       </div>
-      <div className="phone:order-11">
+      <div className="phone:order-11 phone-cv [--cv-h:500px]">
         <DrylineSplit />
       </div>
 
-      <div className="phone:order-9">
+      <div className="phone:order-9 phone-cv [--cv-h:512px]">
       <section className="py-24 md:py-36 phone:bg-mist/60 phone:py-8" aria-labelledby="services-title">
         <div className="mx-auto max-w-[1480px] px-5 md:px-8">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between phone:gap-3">
@@ -80,12 +83,12 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
       </section>
       </div>
 
-      <div className="phone:order-4">
+      <div className="phone:order-4 phone-cv [--cv-h:530px]">
         <DayOnCall />
       </div>
 
       {/* The estimate on phones: the two promises (which sit under "Why" on desktop), then the calculator */}
-      <div className="phone:order-6">
+      <div className="phone:order-6 phone-cv [--cv-h:1390px]">
         <section className="hidden pt-8 pb-4 phone:block" aria-labelledby="estimate-title">
           <div className="px-5">
             <p className="eyebrow text-accent-auto flex items-center gap-3">
@@ -94,7 +97,7 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
             <h2 id="estimate-title" className="display-lg mt-3">
               {L(biz, "How the estimate works.", "Kako ide procena.")}
             </h2>
-            <Promises className="mt-3" />
+            <Promises className="mt-3 phone-cv [--cv-h:200px]" />
           </div>
         </section>
 
@@ -114,7 +117,7 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
       </div>
 
       {biz.lang !== "sr" && (
-      <div className="phone:order-12">
+      <div className="phone:order-12 phone-cv [--cv-h:767px]">
       <section className="bg-mist/60 py-24 md:py-36 phone:py-8" aria-labelledby="club-title">
         <div className="mx-auto max-w-[1480px] px-5 md:px-8">
           <SectionHead align="center" eyebrow="The Comfort Club" title={<span id="club-title">Skip the line when the heat wave hits.</span>}>
@@ -128,11 +131,11 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
       </div>
       )}
 
-      <div className="phone:order-5">
+      <div className="phone:order-5 phone-cv [--cv-h:1211px]">
         <ReviewsSection biz={biz} />
       </div>
 
-      <div className="phone:order-13">
+      <div className="phone:order-13 phone-cv [--cv-h:698px]">
       {biz.preview ? (
         <PreviewMap biz={biz} />
       ) : (
@@ -155,7 +158,7 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
       )}
       </div>
 
-      <div className="hidden phone:order-7 phone:block">
+      <div className="hidden phone:order-7 phone:block phone-cv [--cv-h:423px]">
         <section className="bg-mist/60 px-5 py-8" aria-labelledby="request-title">
           <p className="eyebrow text-accent-auto flex items-center gap-3">
             <span className="h-px w-8 bg-current" aria-hidden /> {L(biz, "Request a visit", "Zahtev za servis")}
@@ -169,7 +172,7 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
         </section>
       </div>
 
-      <div className="phone:order-8">
+      <div className="phone:order-8 phone-cv [--cv-h:577px]">
       <section className="pb-24 md:pb-36 phone:py-8" aria-labelledby="faq-title">
         <div className="mx-auto grid max-w-[1480px] gap-12 px-5 md:px-8 lg:grid-cols-[0.8fr_1.2fr] phone:gap-3">
           <div>
@@ -189,7 +192,7 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
       </section>
       </div>
 
-      <div className="phone:order-14">
+      <div className="phone:order-14 phone-cv [--cv-h:390px]">
         <CtaBand biz={biz} />
       </div>
       </div>

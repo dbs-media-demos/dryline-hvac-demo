@@ -135,10 +135,10 @@ function PhoneReviews({ biz }: { biz: Biz }) {
     <div className="hidden phone:block">
       <div className="grid gap-2.5 px-5">
         {list.slice(0, 3).map((r) => (
-          <ReviewCard key={r.name} r={r} lang={lang} />
+          <ReviewCard key={r.name} r={r} lang={lang} className="phone-cv [--cv-h:204px]" />
         ))}
       </div>
-      <div className="no-scrollbar mt-2.5 flex snap-x snap-mandatory scroll-pl-5 gap-2.5 overflow-x-auto px-5">
+      <div className="phone-cv no-scrollbar mt-2.5 flex snap-x snap-mandatory scroll-pl-5 gap-2.5 overflow-x-auto px-5 [--cv-h:222px]">
         {list.slice(3).map((r) => (
           <ReviewCard key={r.name} r={r} lang={lang} className="h-auto w-[74vw] max-w-[320px] shrink-0 snap-start" />
         ))}

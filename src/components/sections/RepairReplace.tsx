@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { isPhone, loadGsap, tween } from "@/lib/motion";
+import { commas } from "@/lib/format";
 import { ArrowIcon } from "@/components/ui/Icons";
 import { Condenser } from "@/components/fx/HvacTouches";
 
@@ -118,8 +119,8 @@ export function RepairReplace() {
     started.current = true;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const drawSavings = () => {
-      if (savingsEl.current) savingsEl.current.textContent = `$${Math.round(shown.current.s).toLocaleString("en-US")}`;
-      if (tenEl.current) tenEl.current.textContent = `$${(Math.round((shown.current.s * 10) / 50) * 50).toLocaleString("en-US")}`;
+      if (savingsEl.current) savingsEl.current.textContent = `$${commas(Math.round(shown.current.s))}`;
+      if (tenEl.current) tenEl.current.textContent = `$${commas(Math.round((shown.current.s * 10) / 50) * 50)}`;
     };
     // Phones: the needle swings to the answer with a little overshoot, without GSAP
     if (isPhone()) {
@@ -167,7 +168,7 @@ export function RepairReplace() {
           max={5000}
           step={50}
           onChange={setRepair}
-          format={(n) => `$${n.toLocaleString("en-US")}`}
+          format={(n) => `$${commas(n)}`}
           hint="The price you've been quoted for this repair."
         />
         <fieldset>
@@ -193,7 +194,7 @@ export function RepairReplace() {
         <Range label="Summer electric bill" value={bill} min={80} max={600} step={10} onChange={setBill} format={(n) => `$${n}/mo`} />
       </form>
 
-      <div className="theme-navy relative flex flex-col justify-between gap-8 p-6 sm:p-10 phone:gap-2.5 phone:p-3.5" aria-live="polite">
+      <div className="phone-cv theme-navy relative flex flex-col justify-between gap-8 p-6 [--cv-h:455px] sm:p-10 phone:gap-2.5 phone:p-3.5" aria-live="polite">
         <div>
           <div className="flex items-start justify-between gap-4">
             <p className="eyebrow text-frost/60">Our honest read</p>
@@ -242,19 +243,19 @@ export function RepairReplace() {
           <div>
             <dt className="font-mono text-[0.66rem] tracking-[0.12em] text-frost/60 uppercase">Est. yearly savings*</dt>
             <dd className="mt-1 font-display text-[clamp(1.8rem,3vw,2.5rem)] phone:text-[1.3rem] tracking-[-0.04em] text-accent tabular">
-              <span ref={savingsEl}>${result.savings.toLocaleString("en-US")}</span>
+              <span ref={savingsEl}>${commas(result.savings)}</span>
             </dd>
           </div>
           <div>
             <dt className="font-mono text-[0.66rem] tracking-[0.12em] text-frost/60 uppercase">Over 10 years*</dt>
             <dd className="mt-1 font-display text-[clamp(1.8rem,3vw,2.5rem)] phone:text-[1.3rem] tracking-[-0.04em] tabular">
-              <span ref={tenEl}>${(Math.round((result.savings * 10) / 50) * 50).toLocaleString("en-US")}</span>
+              <span ref={tenEl}>${commas(Math.round((result.savings * 10) / 50) * 50)}</span>
             </dd>
           </div>
         </dl>
           <div className="-mt-2 flex flex-wrap items-center justify-between gap-4 phone:mt-0 phone:gap-2">
             <p className="text-[0.82rem] text-frost/60 phone:text-[0.78rem]">
-              $5,000 rule: {age} × ${repair.toLocaleString("en-US")} = <span className="text-frost">${result.rule.toLocaleString("en-US")}</span>
+              $5,000 rule: {age} × ${commas(repair)} = <span className="text-frost">${commas(result.rule)}</span>
             </p>
             <Link href="/schedule?reason=estimate" className="btn btn-accent on-dark phone:min-h-[44px] phone:w-full">
               Get a free second opinion <ArrowIcon width={18} height={18} />

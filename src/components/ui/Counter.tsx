@@ -2,11 +2,12 @@
 
 import { useRef } from "react";
 import { useMotion, prefersReducedMotion } from "@/lib/motion";
+import { commas } from "@/lib/format";
 
 /** Number that counts up when scrolled into view. Server HTML already has the final value. */
 export function Counter({ value, decimals = 0, prefix = "", suffix = "", className }: { value: number; decimals?: number; prefix?: string; suffix?: string; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const fmt = (n: number) => prefix + n.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix;
+  const fmt = (n: number) => prefix + commas(n, decimals) + suffix;
 
   useMotion(
     ({ gsap, ScrollTrigger }) => {

@@ -92,7 +92,7 @@ export function DrylineSplit() {
       {/* Summer (cooling) — full frame */}
       <div className="relative h-[80svh] phone:h-auto not-phone:absolute not-phone:inset-0 not-phone:h-auto">
         <Photo photo={img.stormRoadFire} sizes="100vw" quality={60} />
-        <div className="absolute inset-0 bg-gradient-to-r from-navy/85 via-navy/40 to-navy/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy/85 via-navy/40 to-navy/10 phone:bg-[linear-gradient(90deg,rgb(10_23_38/0.76),rgb(10_23_38/0.7)_70%,rgb(10_23_38/0.38))]" />
         <Panel
           side="cool"
           kicker="July · 104°F"
@@ -112,7 +112,7 @@ export function DrylineSplit() {
       {/* Winter (heating) — revealed behind the moving front */}
       <div ref={winter} className="relative h-[80svh] phone:h-auto not-phone:absolute not-phone:inset-0 not-phone:h-auto not-phone:[clip-path:polygon(120%_0,120%_100%,120%_100%,120%_0)]">
         <Photo photo={img.winterHouseNight} sizes="100vw" quality={60} />
-        <div className="absolute inset-0 bg-gradient-to-l from-navy/85 via-navy/40 to-navy/10" />
+        <div className="absolute inset-0 bg-gradient-to-l from-navy/85 via-navy/40 to-navy/10 phone:bg-[linear-gradient(90deg,rgb(10_23_38/0.76),rgb(10_23_38/0.7)_70%,rgb(10_23_38/0.38))]" />
         <Panel
           side="heat"
           kicker="January · 9°F"
