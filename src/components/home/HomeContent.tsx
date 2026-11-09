@@ -49,7 +49,7 @@ export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; childre
       <div className="phone:order-1">
         <Hero biz={biz} />
       </div>
-      <div className="hidden phone:order-3 phone:block phone-cv [--cv-h:77px]">
+      <div className="hidden phone:order-3 phone:block phone-cv [--cv-h:101px]">
         <ModeToggle />
       </div>
       <div className="phone:order-2 phone-cv [--cv-h:318px]">

@@ -401,6 +401,22 @@ html.lenis body {
   display: none;
 }
 
+/* The hero thermostat: the ring's box; its canvas and still spill past it for the shadow and light */
+.dial-stage {
+  width: min(29vw, 50svh, 460px);
+}
+@media (max-width: 1023.98px) {
+  .dial-stage {
+    width: min(52vw, 380px);
+  }
+}
+/* Where it's shown live (Dial.tsx, LIVE_3D) the 3D display powers on by itself; the drawn readout is for everyone else */
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .dial-stage:not([data-live="off"]) .dial-readout {
+    opacity: 0;
+  }
+}
+
 /* Hero headline: both phrases are in the DOM; the mode decides which one shows. */
 .mode-word {
   display: inline-block;

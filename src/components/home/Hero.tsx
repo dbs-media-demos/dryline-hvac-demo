@@ -10,6 +10,7 @@ import { site } from "@/lib/site";
 import { defaultBiz } from "@/lib/biz";
 import { L, num, telOf, type Biz } from "@/lib/biz-core";
 import { NOT_PHONE_QUERY, PHONE_QUERY } from "@/lib/phone";
+import { modeFor, seasonalDefault } from "@/lib/mode";
 import { sr as srDict } from "@/i18n/sr";
 import { enPreview } from "@/i18n/en-preview";
 
@@ -60,6 +61,9 @@ function PhoneStill({ biz }: { biz: Biz }) {
   ];
   return (
     <div className="absolute inset-x-0 top-0 -z-10 hidden h-[calc(var(--header-h)+clamp(140px,27svh,226px))] overflow-hidden phone:block">
+      {/* The season's still, early in the HTML so it loads with the CSS: the head script's own
+          preload waits for the stylesheets. A visitor who saved the other mode gets theirs from it. */}
+      <link rel="preload" as="image" href={`/images/phone/hero-${modeFor(seasonalDefault())}.webp`} fetchPriority="high" media={PHONE_QUERY} />
       {stills.map((s) => (
         <span key={s.cls} role="img" aria-label={L(biz, s.photo.alt, srDict[s.photo.alt] ?? s.photo.alt)} className={`${s.cls} absolute inset-0`} style={{ backgroundColor: s.photo.color }} />
       ))}
@@ -103,8 +107,7 @@ export function Hero({ biz = defaultBiz }: { biz?: Biz }) {
 
           <h1
             id="hero-title"
-            className="anim-fade eyebrow hero-left order-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-frost/85 phone:block phone:font-display phone:text-[clamp(1.6rem,8.1vw,2.6rem)] phone:leading-[1.06] phone:font-medium phone:tracking-[-0.045em] phone:text-frost phone:normal-case"
-            style={{ "--d": "0.05s" } as React.CSSProperties}
+            className="eyebrow hero-left order-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-frost/85 phone:block phone:font-display phone:text-[clamp(1.6rem,8.1vw,2.6rem)] phone:leading-[1.06] phone:font-medium phone:tracking-[-0.045em] phone:text-frost phone:normal-case"
           >
             <span className="h-px w-8 bg-accent phone:hidden" aria-hidden />
             <span>
@@ -125,7 +128,7 @@ export function Hero({ biz = defaultBiz }: { biz?: Biz }) {
             </p>
           )}
 
-          <div className="anim-heading hero-left relative order-2 lg:mt-6 phone:mt-1" aria-hidden style={{ "--d": "0.1s" } as React.CSSProperties}>
+          <div className="hero-left relative order-2 lg:mt-6 phone:mt-1" aria-hidden>
             <p className="mode-cool display-xl phone:text-[1.25rem] phone:leading-[1.2] phone:tracking-[-0.04em]">
               {/* Letters splits the text as it renders, so the Serbian is chosen here */}
               <Letters text={sr ? "Hladno. Odmah." : "Cool it down."} accentFrom={sr ? 1 : 2} />
@@ -140,7 +143,7 @@ export function Hero({ biz = defaultBiz }: { biz?: Biz }) {
             <span className="text-frost">{t("at the same flat rate as noon.")}</span>
           </p>
 
-          <div className="anim-fade hero-right order-5 flex flex-col gap-3 sm:flex-row lg:mt-9 phone:mt-1.5 phone:gap-2" style={{ "--d": "0.35s" } as React.CSSProperties}>
+          <div className="hero-right order-5 flex flex-col gap-3 sm:flex-row lg:mt-9 phone:mt-1.5 phone:gap-2">
             <a href={telOf(biz)} data-hero-call className="btn btn-accent on-dark min-h-[56px] px-7 text-[1.02rem]">
               <PhoneIcon /> {L(biz, "Call", "Pozovite")} {biz.phoneDisplay}
             </a>
@@ -150,7 +153,7 @@ export function Hero({ biz = defaultBiz }: { biz?: Biz }) {
           </div>
         </div>
 
-        <div className="anim-fade order-3 mx-auto w-full max-w-[290px] sm:max-w-[380px] lg:order-none lg:col-span-5 lg:max-w-[480px] phone:hidden" style={{ "--d": "0.3s" } as React.CSSProperties}>
+        <div className="anim-fade order-3 w-full lg:order-none lg:col-span-5 phone:hidden" style={{ "--d": "0.2s" } as React.CSSProperties}>
           <Dial />
         </div>
       </div>

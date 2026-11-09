@@ -1,36 +1,45 @@
 "use client";
 
-import { useCallback, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import clsx from "clsx";
 import { useBiz } from "@/components/preview/BizContext";
-import { getGsap } from "@/lib/motion";
+import { getGsap, prefersReducedMotion } from "@/lib/motion";
 import { TEMP_MAX, TEMP_MIN, getTemp, modeFor, setTemp, subscribeTemp } from "@/lib/mode";
+import { PHONE_QUERY } from "@/lib/phone";
 import { FlameIcon, SnowIcon } from "@/components/ui/Icons";
+import { FACE, FC, LAYOUT, START, SWEEP, TICK, TICKS, faceText, polar, toAngle } from "./dialFace";
+import type { ThermostatHandle } from "./thermostatScene";
 
 /*
- * The thermostat dial. 270° of travel, 60–85 °F.
- * Drag it, or focus it and use the arrow keys. A wheel over it scrolls the page, and a finger
- * swiping up or down does too (touch-pan-y). It drives the whole site's palette.
+ * The thermostat: a real one in turned aluminium (thermostatScene.ts, three.js) on a desktop with
+ * a mouse, and a still rendered from that scene everywhere else, with its readout drawn on top.
+ * 270° of travel, 60–85 °F. Drag it round, or focus it and use the arrow keys. A wheel over it
+ * scrolls the page, and so does a finger swiping up or down (touch-pan-y). It drives the whole
+ * site's palette.
+ *
+ * three.js is imported only inside the effect below, after load, once a big screen with a mouse,
+ * no ask for less motion and no Save-Data are confirmed: nothing else imports it.
  */
 
-const SWEEP = 270;
-const START = -135;
-const R = 150; // tick ring radius in the 400×400 viewBox
-const C = 200;
+/** Live 3D only for a big screen with a mouse (and no ask for less motion or data). Keep in step with .dial-stage in globals.css. */
+const LIVE_3D = "(min-width: 1024px) and (hover: hover) and (pointer: fine)";
 
-const toAngle = (t: number) => START + ((t - TEMP_MIN) / (TEMP_MAX - TEMP_MIN)) * SWEEP;
-const polar = (angleDeg: number, r: number) => {
-  const a = ((angleDeg - 90) * Math.PI) / 180;
-  return { x: Math.round((C + r * Math.cos(a)) * 100) / 100, y: Math.round((C + r * Math.sin(a)) * 100) / 100 };
-};
-const arcPath = (a0: number, a1: number, r: number) => {
-  const p0 = polar(a0, r);
-  const p1 = polar(a1, r);
-  const large = a1 - a0 > 180 ? 1 : 0;
-  return `M ${p0.x} ${p0.y} A ${r} ${r} 0 ${large} 1 ${p1.x} ${p1.y}`;
-};
+/**
+ * Where the scene puts the thermostat in its square canvas at rest (printed by
+ * scripts/render-3d-stills.mjs): the ring's width and centre, and the display's.
+ */
+const PROJ = { ring: { w: 0.5897, cx: 0.4879, cy: 0.4937 }, face: { cx: 0.4789, cy: 0.4937, w: 0.4873, h: 0.4999 } };
+const CANVAS = 100 / PROJ.ring.w; // canvas size, % of the stage (the ring)
+const pct = (n: number) => `${Math.round(n * 1000) / 1000}%`;
+
+const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
 const noopSubscribe = () => () => {};
+/** Whether this screen gets the live thermostat (the server assumes so; CSS hides the drawn readout only where it can). */
+const readCanLive = () => {
+  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+  return window.matchMedia(LIVE_3D).matches && !prefersReducedMotion() && !saveData;
+};
 const readHint = () => {
   try {
     return localStorage.getItem("dryline-dial-used") === "1";
@@ -39,11 +48,111 @@ const readHint = () => {
   }
 };
 
-const TICKS = Array.from({ length: (TEMP_MAX - TEMP_MIN) * 2 + 1 }, (_, i) => TEMP_MIN + i / 2);
+/** The display drawn in SVG, the same layout as the 3D one (dialFace.ts): for the still. */
+function Readout({ t, sr }: { t: number | null; sr: boolean }) {
+  const v = t ?? TEMP_MIN;
+  const reach = t === null ? START - 1 : toAngle(v);
+  const text = faceText(v, modeFor(v), sr);
+  const L = LAYOUT;
+  const lo = polar(START - L.ends.da, L.ends.r);
+  const hi = polar(START + SWEEP + L.ends.da, L.ends.r);
+  const label = (m: "cool" | "heat") => faceText(v, m, sr).label;
+  return (
+    <svg
+      viewBox={`0 0 ${FACE} ${FACE}`}
+      preserveAspectRatio="none"
+      aria-hidden
+      className="dial-readout pointer-events-none absolute transition-opacity duration-500"
+      style={{
+        left: pct(50 + ((PROJ.face.cx - PROJ.ring.cx - PROJ.face.w / 2) / PROJ.ring.w) * 100),
+        top: pct(50 + ((PROJ.face.cy - PROJ.ring.cy - PROJ.face.h / 2) / PROJ.ring.w) * 100),
+        width: pct((PROJ.face.w / PROJ.ring.w) * 100),
+        height: pct((PROJ.face.h / PROJ.ring.w) * 100),
+      }}
+    >
+      <defs>
+        <filter id="dial-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="7" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <g strokeLinecap="round">
+        {TICKS.map((tv) => {
+          const a = toAngle(tv);
+          const major = tv % 5 === 0;
+          const p0 = polar(a, major ? TICK.major0 : TICK.r0);
+          const p1 = polar(a, TICK.r1);
+          const lit = a <= reach + 0.01;
+          return (
+            <line
+              key={tv}
+              x1={p0.x}
+              y1={p0.y}
+              x2={p1.x}
+              y2={p1.y}
+              strokeWidth={major ? TICK.majorW : TICK.w}
+              stroke={lit ? "var(--accent)" : "rgba(245,249,251,0.2)"}
+              filter={lit ? "url(#dial-glow)" : undefined}
+              style={{ transition: "stroke 0.3s" }}
+            />
+          );
+        })}
+      </g>
+      <g fill="#f5f9fb" textAnchor="middle" fontFamily="var(--font-mono)">
+        <text x={lo.x} y={lo.y + 8} fontSize={L.ends.size} fillOpacity={0.55}>
+          {text.lo}
+        </text>
+        <text x={hi.x} y={hi.y + 8} fontSize={L.ends.size} fillOpacity={0.55}>
+          {text.hi}
+        </text>
+        <text x={FC + L.label.track / 2} y={L.label.y} fontSize={L.label.size} fontWeight={500} letterSpacing={L.label.track} fillOpacity={0.66} data-no-translate>
+          <tspan className="show-cool">{label("cool")}</tspan>
+          <tspan className="show-heat">{label("heat")}</tspan>
+        </text>
+        <text x={FC + L.fan.track / 2} y={L.fan.y} fontSize={L.fan.size} letterSpacing={L.fan.track} fillOpacity={0.5} data-no-translate>
+          {text.fan}
+        </text>
+      </g>
+      {t !== null && (
+        <text x={FC + L.number.dx} y={L.number.y} textAnchor="middle" fill="#f5f9fb" fontFamily="var(--font-display)" fontWeight={500} fontSize={L.number.size} letterSpacing={L.number.track}>
+          {text.number}
+          <tspan fill="var(--accent)" fontSize={L.degree.size} dy={L.degree.dy} dx={6}>
+            °
+          </tspan>
+        </text>
+      )}
+    </svg>
+  );
+}
+
+/** The still under the canvas, one per mode (only the shown one is fetched; phones fetch neither). */
+function Still() {
+  return (
+    <>
+      {(["cool", "heat"] as const).map((m) => (
+        <picture key={m} className={m === "cool" ? "show-cool" : "show-heat"}>
+          <source media={PHONE_QUERY} srcSet={BLANK} />
+          <source type="image/avif" srcSet={`/images/dial/dial-${m}.avif`} />
+          <img src={`/images/dial/dial-${m}.webp`} alt="" width={1200} height={1200} loading="lazy" decoding="async" className="absolute inset-0 size-full" />
+        </picture>
+      ))}
+    </>
+  );
+}
 
 export function Dial({ className }: { className?: string }) {
   const biz = useBiz();
+  const sr = biz.lang === "sr";
   const svg = useRef<SVGSVGElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const scene = useRef<ThermostatHandle | null>(null);
+  const canLive = useSyncExternalStore(noopSubscribe, readCanLive, () => true);
+  const [state, setLive] = useState<"wait" | "on" | "off">("wait");
+  const live = canLive ? state : "off";
   const temp = useSyncExternalStore(subscribeTemp, getTemp, () => null);
   const [dragging, setDragging] = useState(false);
   const storedHint = useSyncExternalStore(noopSubscribe, readHint, () => true);
@@ -51,6 +160,97 @@ export function Dial({ className }: { className?: string }) {
   const hinted = used || storedHint;
   const lastWhole = useRef<number>(0);
   const tween = useRef<gsap.core.Tween | null>(null);
+
+  // The real thermostat. three.js is only imported here, after load, once the check passes.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const el = stage.current;
+    if (!canvas || !el) return;
+    if (!canLive) return;
+
+    let alive = true;
+    let handle: ThermostatHandle | null = null;
+    let idle: number | undefined;
+    let io: IntersectionObserver | undefined;
+    let ro: ResizeObserver | undefined;
+    let unsub: (() => void) | undefined;
+    const hero = el.closest<HTMLElement>("[data-hero]");
+    const onMove = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      handle?.setPointer((e.clientX - (r.left + r.width / 2)) / (window.innerWidth * 0.5), -(e.clientY - (r.top + r.height / 2)) / (window.innerHeight * 0.5));
+    };
+    const onScroll = () => {
+      if (!hero) return;
+      const r = hero.getBoundingClientRect();
+      handle?.setProgress(-r.top / Math.max(1, r.height));
+    };
+    const onLost = (e: Event) => {
+      e.preventDefault();
+      setLive("off");
+    };
+
+    const start = async () => {
+      const cs = getComputedStyle(document.documentElement);
+      const fonts = { display: cs.getPropertyValue("--font-display").trim() || "sans-serif", mono: cs.getPropertyValue("--font-mono").trim() || "monospace" };
+      const [{ createThermostatScene }] = await Promise.all([
+        import("./thermostatScene"),
+        document.fonts.load(`500 100px ${fonts.display}`).catch(() => null),
+        document.fonts.load(`500 30px ${fonts.mono}`).catch(() => null),
+      ]);
+      if (!alive) return;
+      try {
+        handle = createThermostatScene(canvas, { temp: getTemp(), sr, fonts, onReady: () => alive && setLive("on") });
+      } catch {
+        setLive("off"); // no WebGL: the still and its readout stay
+        return;
+      }
+      scene.current = handle;
+      unsub = subscribeTemp((t) => handle?.setTemp(t));
+      io = new IntersectionObserver(([entry]) => handle?.setVisible(entry.isIntersecting));
+      io.observe(el);
+      ro = new ResizeObserver(() => handle?.resize());
+      ro.observe(canvas);
+      canvas.addEventListener("webglcontextlost", onLost);
+      window.addEventListener("pointermove", onMove, { passive: true });
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    };
+    const onLoad = () => {
+      const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200));
+      idle = ric(() => void start(), { timeout: 1200 }) as number;
+    };
+    if (document.readyState === "complete") onLoad();
+    else window.addEventListener("load", onLoad, { once: true });
+
+    return () => {
+      alive = false;
+      window.removeEventListener("load", onLoad);
+      if (idle !== undefined) (window.cancelIdleCallback ?? window.clearTimeout)(idle);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("scroll", onScroll);
+      canvas.removeEventListener("webglcontextlost", onLost);
+      io?.disconnect();
+      ro?.disconnect();
+      unsub?.();
+      handle?.dispose();
+      scene.current = null;
+    };
+  }, [sr, canLive]);
+
+  useEffect(() => {
+    scene.current?.setDragging(dragging);
+  }, [dragging]);
+
+  const commit = useCallback((t: number) => {
+    const clamped = Math.min(TEMP_MAX, Math.max(TEMP_MIN, t));
+    const whole = Math.round(clamped);
+    if (whole !== lastWhole.current) {
+      lastWhole.current = whole;
+      if ("vibrate" in navigator && window.matchMedia("(pointer: coarse)").matches) navigator.vibrate?.(4);
+    }
+    setTemp(clamped);
+  }, []);
+
   const animateTo = (to: number, duration: number, ease: string) => {
     tween.current?.kill();
     const kit = getGsap();
@@ -67,20 +267,12 @@ export function Dial({ className }: { className?: string }) {
     } catch {}
   };
 
-  const commit = useCallback((t: number) => {
-    const clamped = Math.min(TEMP_MAX, Math.max(TEMP_MIN, t));
-    const whole = Math.round(clamped);
-    if (whole !== lastWhole.current) {
-      lastWhole.current = whole;
-      if ("vibrate" in navigator && window.matchMedia("(pointer: coarse)").matches) navigator.vibrate?.(4);
-    }
-    setTemp(clamped);
-  }, []);
-
-  const tempFromPointer = (e: { clientX: number; clientY: number }) => {
+  const fromCentre = (e: { clientX: number; clientY: number }) => {
     const rect = svg.current!.getBoundingClientRect();
-    const dx = e.clientX - (rect.left + rect.width / 2);
-    const dy = e.clientY - (rect.top + rect.height / 2);
+    return { dx: e.clientX - (rect.left + rect.width / 2), dy: e.clientY - (rect.top + rect.height / 2), r: rect.width / 2 };
+  };
+  const tempFromPointer = (e: { clientX: number; clientY: number }) => {
+    const { dx, dy } = fromCentre(e);
     let ang = (Math.atan2(dx, -dy) * 180) / Math.PI; // 0 = top, clockwise +
     // Dead zone at the bottom: snap to the nearest end.
     if (ang > 135) ang = 135;
@@ -89,11 +281,13 @@ export function Dial({ className }: { className?: string }) {
   };
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    const { dx, dy, r } = fromCentre(e);
+    if (Math.hypot(dx, dy) > r * 1.06) return; // outside the ring
     e.preventDefault();
     svg.current?.setPointerCapture(e.pointerId);
     setDragging(true);
     markUsed();
-    // Ease to the clicked point, then follow the finger 1:1.
+    // Ease to the clicked point, then follow the pointer 1:1.
     animateTo(tempFromPointer(e), 0.35, "power3.out");
   };
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -103,7 +297,7 @@ export function Dial({ className }: { className?: string }) {
   };
   const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
     setDragging(false);
-    svg.current?.releasePointerCapture(e.pointerId);
+    if (svg.current?.hasPointerCapture(e.pointerId)) svg.current.releasePointerCapture(e.pointerId);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -132,121 +326,46 @@ export function Dial({ className }: { className?: string }) {
 
   const t = temp ?? 68;
   // Serbian previews read Celsius; the dial's logic stays in °F
-  const celsius = biz.lang === "sr";
-  const toC = (f: number) => Math.round(((f - 32) * 5) / 9);
-  const shown = celsius ? toC(t) : Math.round(t);
+  const shown = sr ? Math.round(((t - 32) * 5) / 9) : Math.round(t);
   const mode = modeFor(t);
-  const angle = toAngle(t);
-  const knob = polar(angle, R);
 
   return (
     <div className={clsx("relative select-none", className)}>
-      <svg
-        ref={svg}
-        viewBox="0 0 400 400"
-        role="slider"
-        tabIndex={0}
-        aria-label="Thermostat — sets the site's heating or cooling mode"
-        aria-valuemin={TEMP_MIN}
-        aria-valuemax={TEMP_MAX}
-        aria-valuenow={shown}
-        aria-valuetext={`${shown} degrees, ${mode === "cool" ? "cooling" : "heating"}`}
-        aria-orientation="horizontal"
-        data-cursor="Drag"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        onKeyDown={onKeyDown}
-        className={clsx("block h-auto w-full touch-pan-y outline-none [&:focus-visible_.focus-ring]:opacity-100", dragging ? "cursor-grabbing" : "cursor-grab")}
-      >
-        <defs>
-          <radialGradient id="dial-face" cx="50%" cy="38%" r="70%">
-            <stop offset="0%" stopColor="#1f3a5a" />
-            <stop offset="70%" stopColor="#0d1c2e" />
-            <stop offset="100%" stopColor="#081321" />
-          </radialGradient>
-          <radialGradient id="dial-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="55%" stopColor="var(--accent)" stopOpacity="0.0" />
-            <stop offset="80%" stopColor="var(--accent)" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="dial-rim" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
-            <stop offset="100%" stopColor="rgba(255,255,255,0.02)" />
-          </linearGradient>
-        </defs>
-
-        {/* ambient glow */}
-        <circle cx={C} cy={C} r={198} fill="url(#dial-glow)" className="transition-opacity duration-700" />
-
-        {/* ticks */}
-        <g>
-          {TICKS.map((v) => {
-            const a = toAngle(v);
-            const major = v % 5 === 0;
-            const p0 = polar(a, major ? R + 16 : R + 10);
-            const p1 = polar(a, R + 26);
-            const lit = v <= t;
-            return (
-              <line
-                key={v}
-                x1={p0.x}
-                y1={p0.y}
-                x2={p1.x}
-                y2={p1.y}
-                strokeWidth={major ? 2.4 : 1.4}
-                strokeLinecap="round"
-                stroke={lit ? "var(--accent)" : "rgba(245,249,251,0.22)"}
-                style={{ transition: "stroke 0.3s" }}
-              />
-            );
-          })}
-        </g>
-
-        {/* track + progress */}
-        <path d={arcPath(START, START + SWEEP, R - 8)} fill="none" stroke="rgba(245,249,251,0.1)" strokeWidth={3} strokeLinecap="round" />
-        <path d={arcPath(START, Math.max(START + 0.01, angle), R - 8)} fill="none" stroke="var(--accent)" strokeWidth={3} strokeLinecap="round" />
-
-        {/* face */}
-        <circle cx={C} cy={C} r={122} fill="url(#dial-face)" />
-        <circle cx={C} cy={C} r={121.5} fill="none" stroke="url(#dial-rim)" strokeWidth={1} />
-        <circle className="focus-ring opacity-0 transition-opacity" cx={C} cy={C} r={186} fill="none" stroke="var(--accent)" strokeWidth={2} strokeDasharray="4 6" />
-
-        {/* grip lines on the face, rotating with the value */}
-        <g style={{ transform: `rotate(${angle}deg)`, transformOrigin: "200px 200px", transition: dragging ? "none" : "transform 0.2s" }}>
-          <line x1={C} y1={C - 108} x2={C} y2={C - 90} stroke="var(--accent)" strokeWidth={4} strokeLinecap="round" />
-        </g>
-
-        {/* knob on the ring */}
-        <circle cx={knob.x} cy={knob.y} r={dragging ? 17 : 14} fill="var(--accent)" style={{ transition: "r 0.3s" }} />
-        <circle cx={knob.x} cy={knob.y} r={5} fill="#0a1726" />
-
-        {/* readout */}
-        <text x={C} y={C - 40} textAnchor="middle" fill="rgba(245,249,251,0.66)" fontFamily="var(--font-mono)" fontSize="11" letterSpacing="2.5">
-          {mode === "cool" ? "COOLING TO" : "HEATING TO"}
-        </text>
-        <text x={C - 6} y={C + 34} textAnchor="middle" fill="#f5f9fb" fontFamily="var(--font-display)" fontSize="92" fontWeight={500} letterSpacing="-6">
-          {temp === null ? "" : shown}
-        </text>
-        <text x={C + 64} y={C - 8} fill="var(--accent)" fontFamily="var(--font-display)" fontSize="26">
-          °
-        </text>
-        <text x={C} y={C + 70} textAnchor="middle" fill="rgba(245,249,251,0.55)" fontFamily="var(--font-mono)" fontSize="10.5" letterSpacing="2">
-          {mode === "cool" ? "FAN · AUTO" : "FAN · AUTO"}
-        </text>
-
-        {/* end labels */}
-        <text {...polar(START - 8, R + 44)} textAnchor="middle" fill="rgba(245,249,251,0.6)" fontFamily="var(--font-mono)" fontSize="11">
-          {celsius ? `${toC(60)}°` : "60°"}
-        </text>
-        <text {...polar(START + SWEEP + 8, R + 44)} textAnchor="middle" fill="rgba(245,249,251,0.6)" fontFamily="var(--font-mono)" fontSize="11">
-          {celsius ? `${toC(85)}°` : "85°"}
-        </text>
-      </svg>
+      <div ref={stage} data-live={live} className="dial-stage relative mx-auto aspect-square">
+        <div
+          className="pointer-events-none absolute aspect-square"
+          style={{ width: pct(CANVAS), left: pct(50 - PROJ.ring.cx * CANVAS), top: pct(50 - PROJ.ring.cy * CANVAS) }}
+        >
+          <Still />
+          <canvas ref={canvasRef} aria-hidden className={clsx("absolute inset-0 size-full transition-opacity duration-700", live === "on" ? "opacity-100" : "opacity-0")} />
+        </div>
+        <Readout t={temp} sr={sr} />
+        <svg
+          ref={svg}
+          viewBox="0 0 400 400"
+          role="slider"
+          tabIndex={0}
+          aria-label="Thermostat — sets the site's heating or cooling mode"
+          aria-valuemin={sr ? 16 : TEMP_MIN}
+          aria-valuemax={sr ? 29 : TEMP_MAX}
+          aria-valuenow={shown}
+          aria-valuetext={sr ? `${shown} stepeni, ${mode === "cool" ? "hlađenje" : "grejanje"}` : `${shown} degrees, ${mode === "cool" ? "cooling" : "heating"}`}
+          aria-orientation="horizontal"
+          data-cursor="Drag"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onKeyDown={onKeyDown}
+          className={clsx("absolute inset-0 block size-full touch-pan-y rounded-full outline-none [&:focus-visible_.focus-ring]:opacity-100", dragging ? "cursor-grabbing" : "cursor-grab")}
+        >
+          <circle cx={200} cy={200} r={200} fill="transparent" />
+          <circle className="focus-ring opacity-0 transition-opacity" cx={200} cy={200} r={212} fill="none" stroke="var(--accent)" strokeWidth={2} strokeDasharray="4 6" />
+        </svg>
+      </div>
 
       {/* quick jumps */}
-      <div className="mt-2 flex items-center justify-center gap-2">
+      <div className="relative mt-7 flex items-center justify-center gap-2">
         <button
           type="button"
           onClick={() => jump(66)}
@@ -272,7 +391,7 @@ export function Dial({ className }: { className?: string }) {
       </div>
       <p
         className={clsx(
-          "mt-3 text-center font-mono text-[0.66rem] tracking-[0.14em] text-frost/60 uppercase transition-opacity duration-700",
+          "relative mt-3 text-center font-mono text-[0.66rem] tracking-[0.14em] text-frost/60 uppercase transition-opacity duration-700",
           hinted ? "opacity-0" : "opacity-100",
         )}
         aria-hidden

@@ -20,8 +20,8 @@ export function Header() {
   const biz = useBiz();
   const telHref = telOf(biz);
   const pathname = usePathname();
-  // "clear" at the very top of the page; once scrolled, solid over the hero (its text must not slide
-  // under a see-through bar) and a glass bar tinted to the section beneath elsewhere. Phones: always solid.
+  // "clear" at the very top of the page; once scrolled, a solid bar (nothing slides by underneath it),
+  // navy over the hero and dark sections and frost over light ones.
   const [tone, setTone] = useState<"clear" | "hero" | "light" | "dark">("clear");
   const headerRef = useRef<HTMLElement>(null);
   // Menus remember which page they were opened on, so navigating closes them without an effect.
@@ -97,9 +97,9 @@ export function Header() {
         ref={headerRef}
         style={{ viewTransitionName: "site-header", top: "var(--bar-h)" }}
         className={clsx(
-          "fixed inset-x-0 z-50 transition-[background-color,color,box-shadow,backdrop-filter] duration-500 ease-[var(--ease-out-expo)] phone:duration-150",
-          look === "light" && "bg-frost/60 text-navy shadow-[0_1px_0_rgb(10_23_38/0.08)] backdrop-blur-lg backdrop-saturate-150 phone:bg-frost phone:backdrop-blur-none phone:backdrop-saturate-100",
-          look === "dark" && "bg-navy/40 text-frost shadow-[0_1px_0_rgb(245_249_251/0.1)] backdrop-blur-lg backdrop-saturate-150 phone:bg-navy phone:backdrop-blur-none phone:backdrop-saturate-100",
+          "fixed inset-x-0 z-50 transition-[background-color,color,box-shadow] duration-500 ease-[var(--ease-out-expo)] phone:duration-150",
+          look === "light" && "bg-frost text-navy shadow-[0_1px_0_rgb(10_23_38/0.08)]",
+          look === "dark" && "bg-navy text-frost shadow-[0_1px_0_rgb(245_249_251/0.1)]",
           look === "hero" && "bg-navy text-frost shadow-[0_1px_0_rgb(245_249_251/0.1)]",
           look === "clear" && "bg-transparent text-frost",
         )}
