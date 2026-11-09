@@ -44,8 +44,8 @@ fs.mkdirSync(path.dirname(out("x")), { recursive: true });
     `import { createThermostatScene, restProjection } from ${JSON.stringify(path.join(ROOT, "src/components/mode/thermostatScene"))};
 const q = new URLSearchParams(location.search);
 const live = q.has("t");
-document.fonts.load("500 100px Disp").finally(() => {
-  const h = createThermostatScene(document.querySelector("canvas")!, { temp: live ? +q.get("t")! : 68, sr: q.has("sr"), still: !live, fonts: { display: "Disp", mono: "ui-monospace, monospace" },
+document.fonts.load("500 100px Disp").finally(async () => {
+  const h = await createThermostatScene(document.querySelector("canvas")!, { temp: live ? +q.get("t")! : 68, sr: q.has("sr"), still: !live, fonts: { display: "Disp", mono: "ui-monospace, monospace" },
     onReady: () => setTimeout(() => ((window as any).__ready = true), live ? 2600 : 50) });
   (window as any).__freeze = (m: "cool" | "heat", bare?: boolean) => h.freeze(m, bare);
   (window as any).__proj = restProjection();

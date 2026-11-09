@@ -18,7 +18,9 @@ import type { ThermostatHandle } from "./thermostatScene";
  * site's palette.
  *
  * three.js is imported only inside the effect below, after load, once a big screen with a mouse,
- * no ask for less motion and no Save-Data are confirmed: nothing else imports it.
+ * no ask for less motion, no Save-Data and a real graphics chip are confirmed: nothing else imports
+ * it. The still stays until the scene has compiled and drawn a frame; if its first 2 s run slowly
+ * it fades back to the still, and the rest of the visit (sessionStorage) starts on the still.
  */
 
 /** Live 3D only for a big screen with a mouse (and no ask for less motion or data). Keep in step with .dial-stage in globals.css. */
@@ -34,11 +36,30 @@ const pct = (n: number) => `${Math.round(n * 1000) / 1000}%`;
 
 const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
+/** Set once the 3D ran too slowly here: the rest of the visit keeps the still. */
+const SLOW_KEY = "dryline-3d-slow";
+const slowBefore = () => {
+  try {
+    return sessionStorage.getItem(SLOW_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+/** WebGL on a real graphics chip: no software rendering (SwiftShader, llvmpipe, Microsoft Basic Render). Checked before three.js is fetched. */
+const hasGpu = () => {
+  const gl = document.createElement("canvas").getContext("webgl2", { failIfMajorPerformanceCaveat: true, powerPreference: "high-performance" });
+  if (!gl) return false;
+  const info = gl.getExtension("WEBGL_debug_renderer_info");
+  const name = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+  gl.getExtension("WEBGL_lose_context")?.loseContext();
+  return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(name);
+};
+
 const noopSubscribe = () => () => {};
 /** Whether this screen gets the live thermostat (the server assumes so; CSS hides the drawn readout only where it can). */
 const readCanLive = () => {
   const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
-  return window.matchMedia(LIVE_3D).matches && !prefersReducedMotion() && !saveData;
+  return window.matchMedia(LIVE_3D).matches && !prefersReducedMotion() && !saveData && !slowBefore();
 };
 const readHint = () => {
   try {
@@ -174,6 +195,7 @@ export function Dial({ className }: { className?: string }) {
     let io: IntersectionObserver | undefined;
     let ro: ResizeObserver | undefined;
     let unsub: (() => void) | undefined;
+    let freeing: number | undefined;
     const hero = el.closest<HTMLElement>("[data-hero]");
     const onMove = (e: PointerEvent) => {
       const r = el.getBoundingClientRect();
@@ -189,22 +211,44 @@ export function Dial({ className }: { className?: string }) {
       setLive("off");
     };
 
+    // Too slow: back to the still for the rest of the visit, and free the renderer once the canvas has faded out.
+    const onSlow = () => {
+      try {
+        sessionStorage.setItem(SLOW_KEY, "1");
+      } catch {}
+      if (!alive) return;
+      setLive("off");
+      freeing = window.setTimeout(() => {
+        handle?.dispose();
+        handle = null;
+        scene.current = null;
+      }, 800);
+    };
+
     const start = async () => {
+      if (!hasGpu()) {
+        setLive("off");
+        return;
+      }
       const cs = getComputedStyle(document.documentElement);
       const fonts = { display: cs.getPropertyValue("--font-display").trim() || "sans-serif", mono: cs.getPropertyValue("--font-mono").trim() || "monospace" };
-      const [{ createThermostatScene }] = await Promise.all([
+      const [{ createThermostatScene, idle }] = await Promise.all([
         import("./thermostatScene"),
         document.fonts.load(`500 100px ${fonts.display}`).catch(() => null),
         document.fonts.load(`500 30px ${fonts.mono}`).catch(() => null),
       ]);
       if (!alive) return;
+      await idle(); // three.js has just been evaluated: build the scene in a task of its own
+      if (!alive) return;
+      let h: ThermostatHandle;
       try {
-        handle = createThermostatScene(canvas, { temp: getTemp(), sr, fonts, onReady: () => alive && setLive("on") });
+        h = await createThermostatScene(canvas, { temp: getTemp(), sr, fonts, onReady: () => alive && setLive("on"), onSlow });
       } catch {
-        setLive("off"); // no WebGL: the still and its readout stay
+        if (alive) setLive("off"); // no WebGL: the still and its readout stay
         return;
       }
-      scene.current = handle;
+      if (!alive) return h.dispose();
+      handle = scene.current = h;
       unsub = subscribeTemp((t) => handle?.setTemp(t));
       io = new IntersectionObserver(([entry]) => handle?.setVisible(entry.isIntersecting));
       io.observe(el);
@@ -226,6 +270,7 @@ export function Dial({ className }: { className?: string }) {
       alive = false;
       window.removeEventListener("load", onLoad);
       if (idle !== undefined) (window.cancelIdleCallback ?? window.clearTimeout)(idle);
+      window.clearTimeout(freeing);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("scroll", onScroll);
       canvas.removeEventListener("webglcontextlost", onLost);
@@ -337,7 +382,7 @@ export function Dial({ className }: { className?: string }) {
           style={{ width: pct(CANVAS), left: pct(50 - PROJ.ring.cx * CANVAS), top: pct(50 - PROJ.ring.cy * CANVAS) }}
         >
           <Still />
-          <canvas ref={canvasRef} aria-hidden className={clsx("absolute inset-0 size-full transition-opacity duration-700", live === "on" ? "opacity-100" : "opacity-0")} />
+          <canvas ref={canvasRef} aria-hidden className={clsx("absolute inset-0 size-full transition-opacity duration-700 will-change-[opacity]", live === "on" ? "opacity-100" : "opacity-0")} />
         </div>
         <Readout t={temp} sr={sr} />
         <svg

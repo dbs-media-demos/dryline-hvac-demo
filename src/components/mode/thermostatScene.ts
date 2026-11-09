@@ -15,7 +15,11 @@ import { accentRgb, mixFor, modeFor } from "@/lib/mode";
  * - It tilts toward the cursor on a spring, tips back as the hero scrolls away, and presses in a
  *   touch while it's being turned. On first show the display powers on.
  *
- * Nothing renders unless something is moving, and nothing at all while it's off screen.
+ * Nothing renders unless something is moving, and nothing at all while it's off screen or the tab
+ * is hidden. It resolves only once its shaders are compiled and a first frame is drawn (still
+ * invisible), so nothing compiles once it shows. Its first 2 s of frames are timed: under about
+ * 45 fps, any frame over 100 ms, or too slow a CPU (PROBE), it stops and calls onSlow (the Dial
+ * goes back to the still).
  */
 
 export type ThermostatHandle = {
@@ -37,6 +41,8 @@ type Opts = {
   sr: boolean;
   fonts: { display: string; mono: string };
   onReady?: () => void;
+  /** Its first 2 s ran too slowly: it has stopped; show the still and dispose it. */
+  onSlow?: () => void;
   /** Skip the power-on (stills). */
   still?: boolean;
 };
@@ -194,8 +200,31 @@ function studio(renderer: THREE.WebGLRenderer) {
 
 // ───────────────────────────── scene ─────────────────────────────
 
-export function createThermostatScene(canvas: HTMLCanvasElement, opts: Opts): ThermostatHandle {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance", premultipliedAlpha: true });
+/** Wait for the browser to be idle: the start-up is cut into short steps, so no one task holds up a frame. */
+export const idle = () =>
+  new Promise<void>((done) => {
+    if (window.requestIdleCallback) window.requestIdleCallback(() => done(), { timeout: 500 });
+    else window.setTimeout(done, 16);
+  });
+
+/**
+ * The check after it shows: how long, the frame-rate floor, the worst single frame, frames skipped
+ * as warm-up, and the most main-thread time a frame of it may take (median). A desktop needs about
+ * 0.4 ms; a CPU four times slower (a weak laptop, or Chrome's 4x slowdown) can't spare the rest of
+ * the page its frames, even when a fast screen keeps the frame rate up.
+ */
+const PROBE = { ms: 2000, fps: 45, worst: 100, skip: 3, cpu: 1.5 };
+
+export async function createThermostatScene(canvas: HTMLCanvasElement, opts: Opts): Promise<ThermostatHandle> {
+  // No proper graphics chip (software rendering): this throws, and the still stays.
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+    powerPreference: "high-performance",
+    failIfMajorPerformanceCaveat: !opts.still,
+    premultipliedAlpha: true,
+  });
   renderer.setClearColor(0x000000, 0);
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -362,7 +391,7 @@ export function createThermostatScene(canvas: HTMLCanvasElement, opts: Opts): Th
   const resize = () => {
     const w = canvas.clientWidth || 1;
     const h = canvas.clientHeight || 1;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -372,12 +401,29 @@ export function createThermostatScene(canvas: HTMLCanvasElement, opts: Opts): Th
   // ───────────── loop: runs only while something moves ─────────────
   let raf = 0;
   let last = 0;
+  // Nothing draws through the loop until the shaders are compiled (a frame before that would compile them on the spot).
+  let ready = false;
+  // Timed from the power-on; keeps the loop running until it has 2 s of frames.
+  const probe = { on: false, ms: 0, frames: 0, worst: 0, skip: PROBE.skip, cpu: [] as number[] };
   const step = (now: number) => {
     raf = 0;
-    if (!visible && !frozen) return;
+    const began = performance.now();
+    if ((!visible || document.hidden) && !frozen) {
+      last = 0;
+      return;
+    }
+    if (probe.on && last) {
+      const ms = now - last;
+      if (probe.skip > 0) probe.skip--;
+      else {
+        probe.ms += ms;
+        probe.frames++;
+        probe.worst = Math.max(probe.worst, ms);
+      }
+    }
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 1 / 60);
     last = now;
-    let moving = false;
+    let moving = probe.on;
 
     // tilt spring toward the cursor (and back as the hero scrolls away)
     shownProgress += (progress - shownProgress) * Math.min(1, dt * 10);
@@ -423,23 +469,70 @@ export function createThermostatScene(canvas: HTMLCanvasElement, opts: Opts): Th
     rim.intensity = 0.9 * (0.4 + 0.6 * on);
 
     renderer.render(scene, camera);
+
+    if (probe.on && probe.frames) probe.cpu.push(performance.now() - began);
+    if (probe.on && (probe.worst > PROBE.worst || probe.ms >= PROBE.ms)) {
+      probe.on = false;
+      const cpu = probe.cpu.sort((a, b) => a - b)[probe.cpu.length >> 1] ?? 0;
+      if (probe.worst > PROBE.worst || (probe.frames * 1000) / probe.ms < PROBE.fps || cpu > PROBE.cpu) {
+        frozen = true;
+        last = 0;
+        opts.onSlow?.();
+        return;
+      }
+    }
     if (moving && !frozen) raf = requestAnimationFrame(step);
     else last = 0;
   };
   function kick() {
-    if (!raf && !frozen) raf = requestAnimationFrame(step);
+    if (ready && !raf && !frozen) raf = requestAnimationFrame(step);
   }
+
+  // A hidden tab stops the loop; back again, it picks up without counting the gap as a frame.
+  const onVisibility = () => {
+    cancelAnimationFrame(raf);
+    raf = 0;
+    last = 0;
+    if (!document.hidden) kick();
+  };
+  document.addEventListener("visibilitychange", onVisibility);
 
   const m0 = modeFor(temp);
   mode = m0;
   resize();
   redrawFace();
-  renderer.compile(scene, camera);
-  renderer.render(scene, camera);
-  // Show only once the first real frame is on the canvas, then power on.
+  // Compile every shader without blocking (parallel compile where the GPU has it), then draw the
+  // first frame while the canvas is still invisible: that also builds the shadow pass and uploads
+  // the textures. Only then does the Dial fade it in.
+  try {
+    await idle();
+    await renderer.compileAsync(scene, camera);
+    // The display lit once too, so its glows and type are drawn before the power-on, not during it
+    if (!opts.still) {
+      await idle();
+      on = 1;
+      redrawFace();
+      renderer.render(scene, camera);
+      on = 0;
+    }
+    await idle();
+    redrawFace();
+    renderer.render(scene, camera);
+    ready = true;
+  } catch (e) {
+    document.removeEventListener("visibilitychange", onVisibility);
+    renderer.dispose();
+    throw e;
+  }
+  // Show only once the first real frame is on the canvas, then power on (and time the frames).
   requestAnimationFrame(() => {
+    if (frozen) return;
     opts.onReady?.();
-    if (!opts.still) window.setTimeout(kick, 380);
+    if (!opts.still)
+      window.setTimeout(() => {
+        probe.on = !!opts.onSlow;
+        kick();
+      }, 380);
   });
 
   return {
@@ -496,6 +589,7 @@ export function createThermostatScene(canvas: HTMLCanvasElement, opts: Opts): Th
     dispose() {
       cancelAnimationFrame(raf);
       frozen = true;
+      document.removeEventListener("visibilitychange", onVisibility);
       scene.traverse((o) => {
         if (o instanceof THREE.Mesh) {
           o.geometry.dispose();
@@ -506,6 +600,7 @@ export function createThermostatScene(canvas: HTMLCanvasElement, opts: Opts): Th
       });
       env.dispose();
       renderer.dispose();
+      renderer.forceContextLoss();
     },
   };
 }
