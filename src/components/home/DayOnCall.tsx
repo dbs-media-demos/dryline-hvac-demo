@@ -22,7 +22,10 @@ export function DayOnCall() {
   const bar = useRef<HTMLDivElement>(null);
   const thermo = useRef<HTMLDivElement>(null);
   const reading = useRef<HTMLSpanElement>(null);
-  const sr = useBiz().lang === "sr";
+  const biz = useBiz();
+  const sr = biz.lang === "sr";
+  // A preview that knows their towns puts the day's calls in them
+  const places = biz.areas.length > 1 ? biz.areas : null;
   const fmt = (f: number) => `${Math.round(sr ? ((f - 32) * 5) / 9 : f)}°${sr ? "C" : "F"}`;
 
   const setDay = (p: number) => {
@@ -132,7 +135,7 @@ export function DayOnCall() {
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-transparent to-transparent" />
                 <p className="absolute top-4 left-4 rounded-full bg-navy/70 px-3 py-1.5 font-mono text-[0.72rem] tracking-wide backdrop-blur phone:top-2.5 phone:left-2.5 phone:bg-navy/85 phone:px-2.5 phone:py-1 phone:text-[0.68rem] phone:backdrop-blur-none">
-                  {c.time} · {c.place}
+                  {c.time} · {places ? places[i % places.length] : c.place}
                 </p>
                 <p className="absolute right-4 bottom-4 font-mono text-[0.68rem] text-frost/70">{String(i + 1).padStart(2, "0")} / 06</p>
               </div>

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { accentRgb, getTemp, mixFor, subscribeTemp } from "@/lib/mode";
 import { PHONE_QUERY } from "@/lib/phone";
+import { onIdle } from "@/lib/idle";
 
 /*
  * Airflow: a field of streaks drifting through the hero.
@@ -153,16 +154,15 @@ export function Airflow({ className }: { className?: string }) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || window.matchMedia(PHONE_QUERY).matches) return;
     let stop: (() => void) | undefined;
     let cancelled = false;
-    const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 400));
-    const handle = ric(
+    const cancelIdle = onIdle(
       () => {
         if (!cancelled) stop = start();
       },
-      { timeout: 1800 },
+      { timeout: 1800, fallbackMs: 400 },
     );
     return () => {
       cancelled = true;
-      (window.cancelIdleCallback ?? window.clearTimeout)(handle as number);
+      cancelIdle();
       stop?.();
     };
   }, []);

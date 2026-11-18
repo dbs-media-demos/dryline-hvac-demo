@@ -9,6 +9,7 @@ import { PHONE_QUERY } from "@/lib/phone";
 import { FlameIcon, SnowIcon } from "@/components/ui/Icons";
 import { FACE, FC, LAYOUT, START, SWEEP, TICK, TICKS, faceText, polar, toAngle } from "./dialFace";
 import type { ThermostatHandle } from "./thermostatScene";
+import { onIdle } from "@/lib/idle";
 
 /*
  * The thermostat: a real one in turned aluminium (thermostatScene.ts, three.js) on a desktop with
@@ -200,7 +201,7 @@ export function Dial({ className }: { className?: string }) {
 
     let alive = true;
     let handle: ThermostatHandle | null = null;
-    let idle: number | undefined;
+    let cancelIdle: (() => void) | undefined;
     let io: IntersectionObserver | undefined;
     let ro: ResizeObserver | undefined;
     let unsub: (() => void) | undefined;
@@ -272,8 +273,7 @@ export function Dial({ className }: { className?: string }) {
       onScroll();
     };
     const onLoad = () => {
-      const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200));
-      idle = ric(() => void start(), { timeout: 1200 }) as number;
+      cancelIdle = onIdle(() => void start(), { timeout: 1200, fallbackMs: 200 });
     };
     if (document.readyState === "complete") onLoad();
     else window.addEventListener("load", onLoad, { once: true });
@@ -281,7 +281,7 @@ export function Dial({ className }: { className?: string }) {
     return () => {
       alive = false;
       window.removeEventListener("load", onLoad);
-      if (idle !== undefined) (window.cancelIdleCallback ?? window.clearTimeout)(idle);
+      cancelIdle?.();
       window.clearTimeout(freeing);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("scroll", onScroll);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useBiz } from "@/components/preview/BizContext";
+import { onIdle } from "@/lib/idle";
 
 type Wx = { temp: number; code: number };
 
@@ -25,14 +26,13 @@ export function LiveWeather({ className }: { className?: string }) {
   const [wx, setWx] = useState<Wx | null>(null);
   useEffect(() => {
     const ctrl = new AbortController();
-    const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 800));
     const where = (): Promise<{ lat: number; lng: number }> =>
       !biz.preview
         ? Promise.resolve({ lat: 35.4676, lng: -97.5164 })
         : fetch(`https://geocoding-api.open-meteo.com/v1/search?count=1&name=${encodeURIComponent(city)}`, { signal: ctrl.signal })
             .then((r) => (r.ok ? r.json() : Promise.reject()))
             .then((d) => (d.results?.[0] ? { lat: d.results[0].latitude, lng: d.results[0].longitude } : Promise.reject()));
-    const id = ric(() => {
+    const cancelIdle = onIdle(() => {
       where()
         .then(({ lat, lng }) =>
           fetch(
@@ -43,10 +43,10 @@ export function LiveWeather({ className }: { className?: string }) {
         .then((r) => (r.ok ? r.json() : Promise.reject()))
         .then((d) => setWx({ temp: Math.round(d.current.temperature_2m), code: d.current.weather_code }))
         .catch(() => {});
-    });
+    }, { fallbackMs: 800 });
     return () => {
       ctrl.abort();
-      (window.cancelIdleCallback ?? window.clearTimeout)(id as number);
+      cancelIdle();
     };
   }, [biz.preview, city, sr]);
   return (

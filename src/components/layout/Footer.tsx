@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoMark } from "@/components/brand/Logo";
+import { LeadLogo } from "@/components/brand/LeadLogo";
 import { OpenBadge } from "@/components/ui/OpenBadge";
 import { PhoneIcon, MailIcon, PinIcon } from "@/components/ui/Icons";
 import { services } from "@/content/services";
@@ -7,7 +8,7 @@ import { cities } from "@/content/cities";
 import { hoursTable } from "@/lib/hours";
 import { site, mailHref, agencyName, agencyUrl } from "@/lib/site";
 import { defaultBiz } from "@/lib/biz";
-import { DAY_NAMES, dayRange, telOf, weekFromMonday, type Biz } from "@/lib/biz-core";
+import { DAY_NAMES, areasFor, dayRange, telOf, weekFromMonday, type Biz } from "@/lib/biz-core";
 
 const company = [
   { href: "/about", label: "About Dryline" },
@@ -58,11 +59,19 @@ export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
           <div className="phone:col-span-2">
             <p className="eyebrow text-muted">Service areas</p>
             <ul className="mt-5 space-y-2.5 phone:grid phone:grid-cols-2 phone:gap-x-5 phone:space-y-0">
-              <li>
-                <Link href="/service-areas" className="link-underline text-frost/85 hover:text-frost">
-                  {biz.preview ? biz.area : "Oklahoma City metro"}
-                </Link>
-              </li>
+              {biz.preview ? (
+                areasFor(biz).map((a) => (
+                  <li key={a} className="text-frost/85">
+                    {a}
+                  </li>
+                ))
+              ) : (
+                <li>
+                  <Link href="/service-areas" className="link-underline text-frost/85 hover:text-frost">
+                    Oklahoma City metro
+                  </Link>
+                </li>
+              )}
               {!biz.preview && cities.map((c) => (
                 <li key={c.slug}>
                   <Link href={`/service-areas/${c.slug}`} className="link-underline text-frost/85 hover:text-frost">
@@ -122,6 +131,11 @@ export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
           </div>
         </div>
 
+        {biz.logo ? (
+          <div className="border-t border-line pt-10 phone:pt-4">
+            <LeadLogo svg={biz.logo.svg} label={biz.name} className="h-[clamp(64px,11vw,170px)] max-w-full text-frost phone:h-[clamp(44px,13vw,72px)]" />
+          </div>
+        ) : (
         <div className="flex items-end gap-4 border-t border-line pt-10 md:gap-8 phone:gap-2 phone:pt-4" aria-hidden>
           <LogoMark tone="dark" className="h-[15vw] w-[15vw] max-h-[190px] max-w-[190px] phone:h-[10vw] phone:w-[10vw]" />
           <span
@@ -131,6 +145,7 @@ export function Footer({ biz = defaultBiz }: { biz?: Biz }) {
             {biz.preview ? biz.shortName.toLowerCase() : "dryline"}
           </span>
         </div>
+        )}
 
         <div className="mt-10 flex flex-col gap-4 text-[0.8rem] text-frost/60 md:flex-row md:items-center md:justify-between phone:mt-3 phone:gap-1.5 phone:text-[0.72rem] phone:leading-[1.35]">
           <p>

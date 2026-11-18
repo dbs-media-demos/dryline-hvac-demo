@@ -12,7 +12,7 @@ export const enPreview: Record<string, string> = {
   Moore: "South side",
   Norman: "College district",
   Yukon: "West side",
-  "Midtown OKC": "Midtown",
+  "Midtown OKC": "Downtown",
   "Spring AC and fall furnace tune-ups — the Oklahoma standard.": "Spring AC and fall furnace tune-ups, done before you need them.",
   "Yes. Calls booked before 2 pm almost always get a same-day visit, and emergency no-cool or no-heat calls are dispatched around the clock. Last summer our average emergency arrival inside the metro was 38 minutes.":
     "Yes. Calls booked before 2 pm almost always get a same-day visit, and emergency no-cool or no-heat calls are dispatched around the clock.",

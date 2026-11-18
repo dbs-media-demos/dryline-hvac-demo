@@ -16,11 +16,20 @@ export function PreviewMap({ biz }: { biz: Biz }) {
         <div>
           <SectionHead
             eyebrow={L(biz, "Service area", "Gde radimo")}
-            title={<span id="area-title">{L(biz, `${biz.area} and around.`, "Vaš grad i okolina.")}</span>}
+            title={<span id="area-title">{L(biz, `${biz.area} and around.`, biz.areas.length > 1 ? `${biz.area} i okolina.` : "Vaš grad i okolina.")}</span>}
           >
             {biz.address.full}
           </SectionHead>
           <Reveal className="mt-10 space-y-6 phone:mt-4 phone:space-y-3">
+            {biz.areas.length > 1 && (
+              <ul className="flex flex-wrap gap-2" aria-label={L(biz, "Areas we serve", "Gde radimo")}>
+                {biz.areas.map((a) => (
+                  <li key={a} className="rounded-full px-3.5 py-1.5 text-[0.9rem] ring-1 ring-line">
+                    {a}
+                  </li>
+                ))}
+              </ul>
+            )}
             <OpenBadge />
             {biz.hours && (
               <dl className="grid max-w-sm grid-cols-[auto_1fr] gap-x-8 gap-y-1.5 text-[0.95rem]">

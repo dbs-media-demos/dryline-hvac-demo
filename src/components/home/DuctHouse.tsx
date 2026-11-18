@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import clsx from "clsx";
 import { useBiz } from "@/components/preview/BizContext";
 import { getGsap, prefersReducedMotion } from "@/lib/motion";
+import { whenLoaderDone } from "@/lib/loader";
 import { TEMP_MAX, TEMP_MIN, getTemp, modeFor, setTemp, subscribeTemp } from "@/lib/mode";
 import { FlameIcon, SnowIcon } from "@/components/ui/Icons";
 
@@ -60,8 +61,8 @@ export function DuctHouse({ className }: { className?: string }) {
 
   const show = useCallback((f: number) => String(Math.round(sr ? toC(f) : f)), [sr]);
 
-  // Room temperatures: each walks to the setting once the air reaches it.
-  useEffect(() => {
+  // Room temperatures: each walks to the setting once the air reaches it (after a preview's logo loader).
+  useEffect(() => whenLoaderDone(() => {
     const el = root.current;
     if (!el) return;
     const reduce = prefersReducedMotion();
@@ -141,7 +142,7 @@ export function DuctHouse({ className }: { className?: string }) {
       io.disconnect();
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [show]);
+  }), [show]);
 
   const animateTo = (to: number) => {
     tween.current?.kill();

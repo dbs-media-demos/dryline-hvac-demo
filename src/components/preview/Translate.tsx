@@ -64,9 +64,9 @@ export function Translate({ dict }: { dict: Record<string, string> }) {
 /**
  * Hide the page until the first translation pass; show it anyway after 2.5 s if JS fails.
  * Phones never blank the first screen: the hero arrives translated from the server, so only what
- * lies below it waits for the pass.
+ * lies below it waits for the pass. The lead's logo loader isn't hidden: it covers the page anyway.
  */
-export const translateGateCss = `@media ${NOT_PHONE_QUERY}{html:not(.tr-ready) body{opacity:0;animation:tr-reveal 0s 2.5s forwards}}@media ${PHONE_QUERY}{html:not(.tr-ready) main section:not([data-hero]),html:not(.tr-ready) footer{visibility:hidden;animation:tr-show 0s 2.5s forwards}}@keyframes tr-reveal{to{opacity:1}}@keyframes tr-show{to{visibility:visible}}`;
+export const translateGateCss = `@media ${NOT_PHONE_QUERY}{html:not(.tr-ready) body>:not(.lead-loader){opacity:0;animation:tr-reveal 0s 2.5s forwards}}@media ${PHONE_QUERY}{html:not(.tr-ready) main section:not([data-hero]),html:not(.tr-ready) footer{visibility:hidden;animation:tr-show 0s 2.5s forwards}}@keyframes tr-reveal{to{opacity:1}}@keyframes tr-show{to{visibility:visible}}`;
 
 /**
  * Dev helper: every visible English fragment on the page that the dictionary doesn't cover yet.

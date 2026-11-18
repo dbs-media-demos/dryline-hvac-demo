@@ -8,6 +8,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // A second dev/test server can build into its own folder (NEXT_DIST_DIR=.next-dev) without touching the running one
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
   images: {
     formats: ["image/avif", "image/webp"],

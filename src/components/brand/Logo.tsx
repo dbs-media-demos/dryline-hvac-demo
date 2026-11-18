@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import { useBiz } from "@/components/preview/BizContext";
+import { LeadLogo } from "./LeadLogo";
 
 /**
  * The Dryline mark: a disc split by one S-curve — the dryline, where hot dry air meets
@@ -36,6 +37,8 @@ export function LogoMark({ className, spin = true, tone = "light" }: { className
 
 export function Logo({ className, tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
   const biz = useBiz();
+  // A preview with the business's own logo: theirs, in the header's ink (currentColor)
+  if (biz.logo) return <LeadLogo svg={biz.logo.svg} label={biz.name} className={clsx("h-9 max-w-[13.5rem] phone:h-8 phone:max-w-[11rem] sm:max-w-[16rem]", className)} />;
   return (
     <span className={clsx("inline-flex items-center gap-2.5", className)}>
       <LogoMark className="h-8 w-8" tone={tone} />
