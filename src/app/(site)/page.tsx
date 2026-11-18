@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/layout/JsonLd";
 import { HomeContent, homeFaqs } from "@/components/home/HomeContent";
+import { Dial } from "@/components/mode/Dial";
 import { buildMetadata } from "@/lib/seo";
 import { services } from "@/content/services";
 import { faqSchema, graph, offerCatalogSchema, webPageSchema } from "@/lib/schema";
@@ -13,7 +14,7 @@ export const metadata: Metadata = buildMetadata({ title, description, path: "/",
 
 export default function Home() {
   return (
-    <HomeContent>
+    <HomeContent hero={<Dial />}>
       <JsonLd
         data={graph(
           webPageSchema({ path: "/", name: title, description }),

@@ -38,16 +38,20 @@ export const homeFaqs = faqs.filter((_, i) => [0, 2, 3, 5, 6, 9].includes(i));
  * FAQ, with everything else after. Two blocks exist for phones alone (the Cool/Heat control, the
  * estimate intro and the form).
  *
+ * `hero` is the hero's centrepiece, passed in by the page so each route ships only its own: the live
+ * 3D thermostat (<Dial />) on `/` and /for/<token>, the drawn house with its air moving (<DuctHouse />,
+ * no three.js) on /v2 and /for/<token>/v2. Everything else on the page is this one shared tree.
+ *
  * Phones lay out only what is near the screen (phone-cv in globals.css): --cv-h is each block's
  * height at 375 px, so the page keeps its length until a block is really measured.
  */
-export function HomeContent({ biz = defaultBiz, children }: { biz?: Biz; children?: ReactNode }) {
+export function HomeContent({ biz = defaultBiz, hero, children }: { biz?: Biz; hero: ReactNode; children?: ReactNode }) {
   return (
     <PageShell>
       {children}
       <div className="phone:flex phone:flex-col">
       <div className="phone:order-1">
-        <Hero biz={biz} />
+        <Hero biz={biz} centre={hero} />
       </div>
       <div className="hidden phone:order-3 phone:block phone-cv [--cv-h:101px]">
         <ModeToggle />

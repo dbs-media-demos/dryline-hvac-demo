@@ -105,7 +105,8 @@ export function Header() {
         )}
       >
         <div className="mx-auto flex h-[var(--header-h)] max-w-[1480px] items-center justify-between gap-6 px-5 md:px-8">
-          <Link href="/" className="relative z-10 rounded-lg">
+          {/* On /v2 (no 3D) the logo keeps the visitor on /v2, and a /v2 preview doesn't prefetch the 3D homepage's code */}
+          <Link href={pathname === "/v2" ? "/v2" : "/"} prefetch={pathname.endsWith("/v2") ? false : undefined} className="relative z-10 rounded-lg">
             <Logo tone={solid ? "light" : "dark"} />
           </Link>
 

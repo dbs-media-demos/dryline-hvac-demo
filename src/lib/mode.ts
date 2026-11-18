@@ -24,7 +24,7 @@ export const seasonalDefault = (d = new Date()) => {
 };
 
 /** Inline <head> script: applies the saved/seasonal temperature before first paint (no flash), and on phones preloads the hero still for that mode. */
-export const modeBootScript = `(function(){try{var t=parseFloat(localStorage.getItem("${STORAGE_KEY}"));if(!(t>=${TEMP_MIN}&&t<=${TEMP_MAX})){var m=new Date().getMonth();t=m>=3&&m<=9?68:76}var x=Math.min(1,Math.max(0,(t-71)/3));x=x*x*(3-2*x);var d=document.documentElement;d.style.setProperty("--mix",x.toFixed(4));d.dataset.mode=t>=72.5?"heat":"cool";d.dataset.temp=String(Math.round(t));if((location.pathname==="/"||location.pathname.indexOf("/for/")===0)&&matchMedia("${PHONE_QUERY}").matches){var l=document.createElement("link");l.rel="preload";l.as="image";l.fetchPriority="high";l.href="/images/phone/hero-"+(t>=72.5?"heat":"cool")+".webp";document.head.appendChild(l)}}catch(e){}})();`;
+export const modeBootScript = `(function(){try{var t=parseFloat(localStorage.getItem("${STORAGE_KEY}"));if(!(t>=${TEMP_MIN}&&t<=${TEMP_MAX})){var m=new Date().getMonth();t=m>=3&&m<=9?68:76}var x=Math.min(1,Math.max(0,(t-71)/3));x=x*x*(3-2*x);var d=document.documentElement;d.style.setProperty("--mix",x.toFixed(4));d.dataset.mode=t>=72.5?"heat":"cool";d.dataset.temp=String(Math.round(t));if((location.pathname==="/"||location.pathname==="/v2"||location.pathname.indexOf("/for/")===0)&&matchMedia("${PHONE_QUERY}").matches){var l=document.createElement("link");l.rel="preload";l.as="image";l.fetchPriority="high";l.href="/images/phone/hero-"+(t>=72.5?"heat":"cool")+".webp";document.head.appendChild(l)}}catch(e){}})();`;
 
 type Listener = (t: number) => void;
 const listeners = new Set<Listener>();

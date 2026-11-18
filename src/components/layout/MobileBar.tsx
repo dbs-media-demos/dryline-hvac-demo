@@ -15,7 +15,7 @@ import { PhoneIcon } from "@/components/ui/Icons";
 export function MobileBar() {
   const biz = useBiz();
   const pathname = usePathname();
-  const isHome = pathname === "/" || pathname.startsWith("/for/");
+  const isHome = pathname === "/" || pathname === "/v2" || pathname.startsWith("/for/");
   const [pastHero, setPastHero] = useState(false);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { getImageProps } from "next/image";
 import { Photo } from "@/components/ui/Photo";
-import { Dial } from "@/components/mode/Dial";
 import { LiveWeather } from "@/components/mode/LiveWeather";
 import { Airflow } from "@/components/fx/Airflow";
 import { PhoneIcon, ShieldIcon, StarIcon } from "@/components/ui/Icons";
@@ -72,7 +72,11 @@ function PhoneStill({ biz }: { biz: Biz }) {
   );
 }
 
-export function Hero({ biz = defaultBiz }: { biz?: Biz }) {
+/**
+ * `centre` is the hero's centrepiece, chosen by the page: the live 3D thermostat (<Dial />) on `/`,
+ * the drawn house (<DuctHouse />) on /v2. The page imports it, so each route ships only its own.
+ */
+export function Hero({ biz = defaultBiz, centre }: { biz?: Biz; centre: ReactNode }) {
   const sr = biz.lang === "sr";
   // Translated here, not after hydration: on phones this text is on screen from the first paint
   const t = (s: string) => (sr ? (srDict[s] ?? s) : biz.preview ? (enPreview[s] ?? s) : s);
@@ -154,7 +158,7 @@ export function Hero({ biz = defaultBiz }: { biz?: Biz }) {
         </div>
 
         <div className="anim-fade order-3 w-full lg:order-none lg:col-span-5 phone:hidden" style={{ "--d": "0.2s" } as React.CSSProperties}>
-          <Dial />
+          {centre}
         </div>
       </div>
 
