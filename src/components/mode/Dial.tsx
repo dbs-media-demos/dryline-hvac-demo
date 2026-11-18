@@ -20,7 +20,8 @@ import type { ThermostatHandle } from "./thermostatScene";
  * three.js is imported only inside the effect below, after load, once a big screen with a mouse,
  * no ask for less motion, no Save-Data and a real graphics chip are confirmed: nothing else imports
  * it. The still stays until the scene has compiled and drawn a frame; if its first 2 s run slowly
- * it fades back to the still, and the rest of the visit (sessionStorage) starts on the still.
+ * it fades back to the still, and after two slow page loads the rest of the visit (sessionStorage)
+ * starts on the still.
  */
 
 /** Live 3D only for a big screen with a mouse (and no ask for less motion or data). Keep in step with .dial-stage in globals.css. */
@@ -36,11 +37,19 @@ const pct = (n: number) => `${Math.round(n * 1000) / 1000}%`;
 
 const BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
-/** Set once the 3D ran too slowly here: the rest of the visit keeps the still. */
-const SLOW_KEY = "dryline-3d-slow";
+/**
+ * Page loads on which the 3D ran too slowly: after two, the rest of the visit keeps the still. One
+ * slow start used to keep it off for the whole tab (the old "dryline-3d-slow" flag, no longer read):
+ * on 18 Nov every refresh got the still.
+ */
+const SLOW_KEY = "dryline-3d-slow-loads";
+const SLOW_LIMIT = 2;
+// This page load ran slow (counted once)
+let slowHere = false;
 const slowBefore = () => {
+  if (slowHere) return true;
   try {
-    return sessionStorage.getItem(SLOW_KEY) === "1";
+    return Number(sessionStorage.getItem(SLOW_KEY) || 0) >= SLOW_LIMIT;
   } catch {
     return false;
   }
@@ -211,11 +220,14 @@ export function Dial({ className }: { className?: string }) {
       setLive("off");
     };
 
-    // Too slow: back to the still for the rest of the visit, and free the renderer once the canvas has faded out.
+    // Too slow: back to the still (two slow page loads keep it for the visit), and free the renderer once the canvas has faded out.
     const onSlow = () => {
-      try {
-        sessionStorage.setItem(SLOW_KEY, "1");
-      } catch {}
+      if (!slowHere) {
+        slowHere = true;
+        try {
+          sessionStorage.setItem(SLOW_KEY, String(Number(sessionStorage.getItem(SLOW_KEY) || 0) + 1));
+        } catch {}
+      }
       if (!alive) return;
       setLive("off");
       freeing = window.setTimeout(() => {

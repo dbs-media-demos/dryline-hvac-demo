@@ -18,7 +18,7 @@ import { accentRgb, mixFor, modeFor } from "@/lib/mode";
  * Nothing renders unless something is moving, and nothing at all while it's off screen or the tab
  * is hidden. It resolves only once its shaders are compiled and a first frame is drawn (still
  * invisible), so nothing compiles once it shows. Its first 2 s of frames are timed: under about
- * 45 fps, any frame over 100 ms, or too slow a CPU (PROBE), it stops and calls onSlow (the Dial
+ * 45 fps, a 3rd frame over 100 ms (or one over 400 ms), or too slow a CPU (PROBE), it stops and calls onSlow (the Dial
  * goes back to the still).
  */
 
@@ -208,12 +208,15 @@ export const idle = () =>
   });
 
 /**
- * The check after it shows: how long, the frame-rate floor, the worst single frame, frames skipped
- * as warm-up, and the most main-thread time a frame of it may take (median). A desktop needs about
+ * The check after it shows: how long, the frame-rate floor, a slow frame (the 3rd one fails it, or
+ * one over `freeze`), frames skipped as warm-up, and the most main-thread time a frame of it may take (median).
+ * The first frames after it shows pay one-off costs (the GPU's first real draw: 371 ms on a refresh
+ * of a PC that then ran 112 fps, 18 Nov), and a hitch or two (a font, an image decode) isn't a slow
+ * computer, so neither drops the 3D any more. A desktop needs about
  * 0.4 ms; a CPU four times slower (a weak laptop, or Chrome's 4x slowdown) can't spare the rest of
  * the page its frames, even when a fast screen keeps the frame rate up.
  */
-const PROBE = { ms: 2000, fps: 45, worst: 100, skip: 3, cpu: 1.5 };
+const PROBE = { ms: 2000, fps: 45, worst: 100, hitches: 3, freeze: 400, skip: 5, cpu: 1.5 };
 
 export async function createThermostatScene(canvas: HTMLCanvasElement, opts: Opts): Promise<ThermostatHandle> {
   // No proper graphics chip (software rendering): this throws, and the still stays.
@@ -404,7 +407,7 @@ export async function createThermostatScene(canvas: HTMLCanvasElement, opts: Opt
   // Nothing draws through the loop until the shaders are compiled (a frame before that would compile them on the spot).
   let ready = false;
   // Timed from the power-on; keeps the loop running until it has 2 s of frames.
-  const probe = { on: false, ms: 0, frames: 0, worst: 0, skip: PROBE.skip, cpu: [] as number[] };
+  const probe = { on: false, ms: 0, frames: 0, hitches: 0, hitch: false, skip: PROBE.skip, cpu: [] as number[] };
   const step = (now: number) => {
     raf = 0;
     const began = performance.now();
@@ -418,7 +421,7 @@ export async function createThermostatScene(canvas: HTMLCanvasElement, opts: Opt
       else {
         probe.ms += ms;
         probe.frames++;
-        probe.worst = Math.max(probe.worst, ms);
+        if (ms > PROBE.worst && (++probe.hitches >= PROBE.hitches || ms > PROBE.freeze)) probe.hitch = true;
       }
     }
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 1 / 60);
@@ -471,10 +474,10 @@ export async function createThermostatScene(canvas: HTMLCanvasElement, opts: Opt
     renderer.render(scene, camera);
 
     if (probe.on && probe.frames) probe.cpu.push(performance.now() - began);
-    if (probe.on && (probe.worst > PROBE.worst || probe.ms >= PROBE.ms)) {
+    if (probe.on && (probe.hitch || probe.ms >= PROBE.ms)) {
       probe.on = false;
       const cpu = probe.cpu.sort((a, b) => a - b)[probe.cpu.length >> 1] ?? 0;
-      if (probe.worst > PROBE.worst || (probe.frames * 1000) / probe.ms < PROBE.fps || cpu > PROBE.cpu) {
+      if (probe.hitch || (probe.frames * 1000) / probe.ms < PROBE.fps || cpu > PROBE.cpu) {
         frozen = true;
         last = 0;
         opts.onSlow?.();
